@@ -285,8 +285,8 @@ func spineGestures(spec typeSpec) []*cli.Command {
 			return map[string]any{"content": content}
 		}, "POST /recordings/{id}/boost"),
 		g("unboost", "Retire son boost.", "DELETE", "/boost", nil, "DELETE /recordings/{id}/boost"),
-		g("subscribe", "S'abonne aux notifications du recording.", "POST", "/subscribe", nil, "POST /recordings/{id}/subscribe"),
-		g("unsubscribe", "Se désabonne.", "DELETE", "/subscribe", nil, "DELETE /recordings/{id}/subscribe"),
+		g("subscribe", "S'abonne aux notifications du recording.", "POST", "/subscription", nil, "POST /recordings/{id}/subscription"),
+		g("unsubscribe", "Se désabonne.", "DELETE", "/subscription", nil, "DELETE /recordings/{id}/subscription"),
 		g("read", "Marque lu.", "POST", "/read", nil, "POST /recordings/{id}/read"),
 		g("archive", "Archive (avec les enfants).", "POST", "/archive", nil, "POST /recordings/{id}/archive"),
 		g("restore", "Restaure depuis l'archive ou la corbeille.", "POST", "/restore", nil, "POST /recordings/{id}/restore"),
