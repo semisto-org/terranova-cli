@@ -43,7 +43,7 @@ type Command struct {
 	AgentHelp string     `json:"agent_notes,omitempty"`
 	// APIOps : les opérations OpenAPI ("GET /projects", …) que cette commande
 	// couvre — la matière du gate de couverture (ISC-390).
-	APIOps []string `json:"api_ops,omitempty"`
+	APIOps []string                                     `json:"api_ops,omitempty"`
 	Run    func(c *Ctx, args []string) (*Result, error) `json:"-"`
 }
 

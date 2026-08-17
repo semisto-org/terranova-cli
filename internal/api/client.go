@@ -214,7 +214,7 @@ func (c *Client) decorate(req *http.Request) {
 }
 
 // Get / Post / Patch / Delete — sucre.
-func (c *Client) Get(path string, out any) error    { return c.Do(http.MethodGet, path, nil, out) }
+func (c *Client) Get(path string, out any) error { return c.Do(http.MethodGet, path, nil, out) }
 func (c *Client) Post(path string, body, out any) error {
 	return c.Do(http.MethodPost, path, body, out)
 }

@@ -87,7 +87,7 @@ func init() {
 		Sub: []*cli.Command{
 			{
 				Name: "list", Summary: "Liste MES hubs — la constellation telle que je la vois (ISC-424).",
-				APIOps: []string{"GET /me"},
+				APIOps:    []string{"GET /me"},
 				AgentHelp: "La liste vient de /me : un membre voit ses hubs, pas ceux du réseau. La vue superadmin cross-hubs vit sous `network hubs`.",
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
