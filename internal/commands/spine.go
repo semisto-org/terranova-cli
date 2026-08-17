@@ -288,6 +288,8 @@ func spineGestures(spec typeSpec) []*cli.Command {
 		g("subscribe", "S'abonne aux notifications du recording.", "POST", "/subscription", nil, "POST /recordings/{id}/subscription"),
 		g("unsubscribe", "Se désabonne.", "DELETE", "/subscription", nil, "DELETE /recordings/{id}/subscription"),
 		g("read", "Marque lu.", "POST", "/read", nil, "POST /recordings/{id}/read"),
+		g("bookmark", "Pose un marque-page (idempotent).", "POST", "/bookmark", nil, "POST /recordings/{id}/bookmark"),
+		g("unbookmark", "Retire son marque-page.", "DELETE", "/bookmark", nil, "DELETE /recordings/{id}/bookmark"),
 		g("archive", "Archive (avec les enfants).", "POST", "/archive", nil, "POST /recordings/{id}/archive"),
 		g("restore", "Restaure depuis l'archive ou la corbeille.", "POST", "/restore", nil, "POST /recordings/{id}/restore"),
 	}
