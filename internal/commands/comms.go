@@ -171,6 +171,51 @@ func init() {
 				},
 			},
 			{
+				Name: "timesheets", Summary: "Mes heures pointées (projets à suivi activé), avec le total.",
+				APIOps: []string{"GET /my/timesheets"},
+				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+					client, err := c.API()
+					if err != nil {
+						return nil, err
+					}
+					var out struct {
+						Timesheets []map[string]any `json:"timesheets"`
+						TotalHours float64          `json:"total_hours"`
+					}
+					if err := client.Get("/my/timesheets", &out); err != nil {
+						return nil, err
+					}
+					rows := [][]string{}
+					for _, t := range out.Timesheets {
+						rows = append(rows, []string{str(t["worked_on"]), str(t["project"]), str(t["hours"]), str(t["description"])})
+					}
+					return &cli.Result{Data: out, Headers: []string{"JOUR", "PROJET", "H", "QUOI"}, Rows: rows,
+						Summary: fmt.Sprintf("%.1f h au total.", out.TotalHours)}, nil
+				},
+			},
+			{
+				Name: "bookmarks", Summary: "Mes marque-pages, dans leur ordre.",
+				APIOps: []string{"GET /my/bookmarks"},
+				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+					client, err := c.API()
+					if err != nil {
+						return nil, err
+					}
+					var out struct {
+						Bookmarks []map[string]any `json:"bookmarks"`
+					}
+					if err := client.Get("/my/bookmarks", &out); err != nil {
+						return nil, err
+					}
+					rows := [][]string{}
+					for _, b := range out.Bookmarks {
+						rows = append(rows, []string{str(b["id"]), str(b["type"]), str(b["title"]), str(b["project"])})
+					}
+					return &cli.Result{Data: out.Bookmarks, Headers: []string{"ID", "TYPE", "TITRE", "PROJET"}, Rows: rows,
+						Summary: fmt.Sprintf("%d marque-page(s).", len(out.Bookmarks))}, nil
+				},
+			},
+			{
 				Name: "notifications", Summary: "Mes notifications non lues.",
 				APIOps: []string{"GET /notifications"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {

@@ -348,7 +348,9 @@ messages trash <id>
 messages unboost <id>
 messages unsubscribe <id>
 my
+my bookmarks
 my notifications
+my timesheets
 my todos
 network
 network hubs
@@ -487,7 +489,9 @@ planto varieties list [--q <texte>] [--species-id <id>]
 planto varieties show <id>
 projects
 projects add [--name <nom>] [--kind <genre>] [--description <texte>] [--access <accès>]
+projects edit <id> [--name <nom>] [--description <texte>] [--color <couleur>] [--status <statut>]
 projects list
+projects people <project_id> [--add <user_id>] [--remove <user_id>]
 projects show <id>
 projects tools <project_id> [--install <kind>] [--name <nom>]
 questions

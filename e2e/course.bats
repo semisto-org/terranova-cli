@@ -105,3 +105,23 @@ T="$TERRANOVA_BIN --agent"
   run $T notifications read-all
   [ "$status" -eq 0 ]
 }
+
+@test "people : lister les participants du projet, en ajouter, retirer" {
+  pid=$($T projects list --jq '.projects[] | select(.name=="Chantier e2e") | .id' --quiet)
+  run $T projects people "$pid"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"E2E Runner"* ]]
+}
+
+@test "my : mes vues répondent (todos assignées, bookmarks)" {
+  run $T my todos
+  [ "$status" -eq 0 ]
+  run $T my bookmarks
+  [ "$status" -eq 0 ]
+}
+
+@test "projects edit : renommer un projet par l'API" {
+  pid=$($T projects list --jq '.projects[] | select(.name=="Chantier e2e") | .id' --quiet)
+  run $T projects edit "$pid" --description "Renommé par le parcours"
+  [ "$status" -eq 0 ]
+}

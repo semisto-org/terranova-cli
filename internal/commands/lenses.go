@@ -194,6 +194,12 @@ func init() {
 	projects := buildRestCommand(restSpec{
 		Cmd: "projects", Base: "/projects", Summary: "Projets du hub : la visibilité est celle de l'accueil web (ISC-374).",
 		List: true, Show: true,
+		Update: []cli.Flag{
+			{Name: "name", Arg: "nom", Help: "Nom du projet."},
+			{Name: "description", Arg: "texte", Help: "Description."},
+			{Name: "color", Arg: "couleur", Help: "Couleur."},
+			{Name: "status", Arg: "statut", Help: "Statut (valeurs archivables seulement)."},
+		},
 		Create: []cli.Flag{
 			{Name: "name", Arg: "nom", Help: "Nom du projet (obligatoire)."},
 			{Name: "kind", Arg: "genre", Help: "circle|design|hq… (défaut circle)."},
@@ -229,6 +235,50 @@ func init() {
 				return nil, err
 			}
 			return &cli.Result{Data: out, Summary: "Outil installé."}, nil
+		},
+	})
+	projects.Sub = append(projects.Sub, &cli.Command{
+		Name: "people", Summary: "Qui participe au projet : lister, ajouter (--add), retirer (--remove) — membres du hub seulement (ISC-395).",
+		ArgSpec: "<project_id>", MinArgs: 1,
+		Flags: []cli.Flag{
+			{Name: "add", Arg: "user_id", Help: "Ajoute ce membre du hub au projet."},
+			{Name: "remove", Arg: "user_id", Help: "Retire cette personne du projet."},
+		},
+		APIOps: []string{"GET /projects/{project_id}/people", "POST /projects/{project_id}/people", "DELETE /projects/{project_id}/people/{id}"},
+		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+			add, args := cli.FlagValue(args, "add")
+			remove, args := cli.FlagValue(args, "remove")
+			client, err := c.API()
+			if err != nil {
+				return nil, err
+			}
+			pid := args[0]
+			if add != "" {
+				var out map[string]any
+				if err := client.Post("/projects/"+pid+"/people", map[string]any{"user_id": add}, &out); err != nil {
+					return nil, err
+				}
+				return &cli.Result{Data: out, Summary: "Ajouté au projet."}, nil
+			}
+			if remove != "" {
+				if err := client.Delete("/projects/"+pid+"/people/"+remove, nil); err != nil {
+					return nil, err
+				}
+				return &cli.Result{Data: map[string]any{"removed": remove}, Summary: "Retiré du projet."}, nil
+			}
+			var out struct {
+				People []map[string]any `json:"people"`
+				Access string           `json:"access"`
+			}
+			if err := client.Get("/projects/"+pid+"/people", &out); err != nil {
+				return nil, err
+			}
+			rows := [][]string{}
+			for _, p := range out.People {
+				rows = append(rows, []string{str(p["id"]), str(p["name"]), str(p["email"])})
+			}
+			return &cli.Result{Data: out, Headers: []string{"ID", "NOM", "EMAIL"}, Rows: rows,
+				Summary: fmt.Sprintf("%d participant(s) · accès %s.", len(out.People), out.Access)}, nil
 		},
 	})
 	cli.Register(projects)
