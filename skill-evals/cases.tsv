@@ -1,0 +1,7 @@
+# Cas d'évaluation (ISC-389) — chaque ligne : nom <TAB> commandes (;) <TAB> vérification <TAB> attendu-dans-la-sortie
+# Les {vars} se résolvent au fil du cas : {pid} = id du projet créé, {out} = dernier id extrait.
+inscription-contact-activite	projects add --name "Éval Formation" --kind academy ; contacts add Jules Éval ; academio activities list	academio activities list --agent	Éval Formation
+tache-assignee-du-matin	projects add --name "Éval Chantier" ; SETPID Éval Chantier ; projects tools {pid} --install todoset ; todosets list -p {pid} --ids-only ; todolists add "Éval liste" -p {pid} --parent {out} ; todolists list -p {pid} --ids-only ; todos add "Éval tâche du matin" -p {pid} --parent {out} --due-on 2026-12-01	todos list -p {pid} --agent	Éval tâche du matin
+chat-dire-bonjour	SETPID Éval Chantier ; projects tools {pid} --install campfire ; chat list -p {pid} --ids-only ; chat post {out} "Bonjour, ici l'évaluation"	chat lines {out} --agent	Bonjour, ici l'évaluation
+recherche-retrouve	search "Éval tâche"	search "Éval tâche" --agent	Éval tâche du matin
+qui-na-pas-solde	payments outstanding	payments outstanding --agent	outstanding

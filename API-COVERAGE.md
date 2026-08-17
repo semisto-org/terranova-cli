@@ -11,15 +11,10 @@ Chaque opération de `/api/v1/openapi` a une commande CLI **ou** une ligne d'exe
 
 ## Le gate inverse (ISC-391) — ce que l'app doit encore faire naître
 
-Une commande listée par l'ISA sans endpoint est un défaut de l'APP. Relevé au 2026-08-18 :
+Une commande listée par l'ISA sans endpoint est un défaut de l'APP. Relevé au 2026-08-18 — **la nuit a fait naître** : /me, gestes de la spine documentés, chat lines, search, notifications, people, my, nurserio orders, payments (+plans, +outstanding), academio (activités/présences/packs/référentiels), asbl (cotisations/AG/effectif), pings. Reste :
 
 | Manque côté app | ISC | Commande CLI en attente |
 |---|---|---|
-| Pings (conversations 1:1\/groupe) | ISC-408 | `pings` |
-| Rapports + mes timesheets\/bookmarks | ISC-410 | `reports`, `my timesheets`, `my bookmarks` |
-| Academio (activités, séances, packs, présences) | ISC-436 | `academio …` |
-| Paiements et échéanciers | ISC-437 | `payments …` |
-| Adhésion ASBL | ISC-438 | `administratio members …` |
-| Commandes de pépinière | ISC-439 | `nurserio orders …` |
+| Rapports (Lineup, Hilltop, financier…) | ISC-410 | `reports` — mes timesheets/bookmarks sont NÉS (/my/*) |
 | Analyse de palette, fusion de contacts | ISC-441 | `conceptio palette-analysis`, `contacto merge` |
 | Épingler/catégoriser un message, versions de docs, iCal | ISC-399/400/402 | sucre à venir |

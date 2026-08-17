@@ -1,9 +1,29 @@
+academio
+academio activities
+academio activities list
+academio activities show <id>
+academio attendances
+academio attendances list [--session <id>] [--participant <id>]
+academio attendances remove <id>
+academio attendances set <participant_id> <schedule_entry_id> [--absent]
+academio locations
+academio packs
+academio packs add <participant_id> <training_pack_id> [--quantity <n>] [--price-cents <n>]
+academio packs list [--participant <id>]
+academio packs remove <id>
+academio types
 administratio
 administratio expenses
 administratio expenses add [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
 administratio expenses edit <id> [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
 administratio expenses list
 administratio expenses show <id>
+administratio members
+administratio members assemblies
+administratio members effectif-requests [--status <statut>]
+administratio members fees [--status <statut>] [--enrollment <id>]
+administratio members mark-fee-paid <id>
+administratio members rates
 administratio mileage-claims
 administratio mileage-claims list
 administratio mileage-claims show <id>
@@ -366,6 +386,14 @@ notifications read-all
 nurserio
 nurserio containers
 nurserio containers list
+nurserio orders
+nurserio orders add [--line <batch:qty>] [--customer <nom>] [--email <email>] [--phone <tél>] [--member-id <id>] [--pickup-site-id <id>] [--pickup-on <date>] [--notes <texte>]
+nurserio orders cancel <id>
+nurserio orders list [--status <statut>]
+nurserio orders pickup <id>
+nurserio orders process <id>
+nurserio orders ready <id>
+nurserio orders show <id>
 nurserio sites
 nurserio sites list
 nurserio stock-batches
@@ -451,10 +479,23 @@ participants subscribe <id>
 participants trash <id>
 participants unboost <id>
 participants unsubscribe <id>
+payments
+payments add [--participant <id>] [--amount-cents <n>] [--kind <genre>] [--reference <réf>]
+payments list [--status <statut>] [--participant <id>]
+payments mark-paid <id>
+payments outstanding [--list <recording_id>]
+payments plans [--participant <id>]
+payments show <id>
 people
 people add [--email <email>] [--first-name <prénom>] [--last-name <nom>]
 people list
 people show <id>
+pings
+pings archive <id>
+pings list
+pings reply <id> <texte…>
+pings send <texte…> --to <user_id,user_id…> [--to <ids>]
+pings show <id>
 plant-records
 plant-records add <titre> [--project <id>] [--parent <id>] [--status <statut>] [--plant-marker-id <id>]
 plant-records archive <id>

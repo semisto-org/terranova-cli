@@ -24,7 +24,9 @@ TOKEN=$(RAILS_ENV=test bin/rails runner '
   Structure.find_or_create_by!(hub: hub, name: "E2E ASBL") { |s| s.default = true }
   user = User.find_or_create_by!(email_address: "e2e@semisto.org") { |u| u.name = "E2E Runner"; u.password = SecureRandom.hex(12) }
   Membership.find_or_create_by!(user: user, hub: hub) { |m| m.role = "admin" }
-  token = ApiToken.create!(user: user, hub: hub, name: "e2e-#{Time.now.to_i}")
+  # Les evals jouent les lentilles : tous les grants + tous les scopes.
+  InterfaceGrant::INTERFACES.each { |i| InterfaceGrant.find_or_create_by!(user: user, interface: i, hub: (i == "planto" ? nil : hub)) { |g| g.granted_by = user } }
+  token = ApiToken.create!(user: user, hub: hub, name: "e2e-#{Time.now.to_i}", scopes: ApiToken::SCOPES - [ "network" ])
   puts token.raw_token
 ' | tail -1)
 [ -n "$TOKEN" ] || { echo "jeton non semé"; exit 1; }
@@ -48,3 +50,11 @@ TERRANOVA_API_TOKEN="$TOKEN" \
 TERRANOVA_NO_KEYCHAIN=1 \
 TERRANOVA_CONFIG_DIR=$(mktemp -d) \
 bats e2e/course.bats
+
+echo "── skill-evals (ISC-389) ──"
+TERRANOVA_BIN=/tmp/terranova-e2e \
+TERRANOVA_BASE_URL="http://127.0.0.1:$PORT/api/v1" \
+TERRANOVA_API_TOKEN="$TOKEN" \
+TERRANOVA_NO_KEYCHAIN=1 \
+TERRANOVA_CONFIG_DIR=$(mktemp -d) \
+zsh skill-evals/run.sh
