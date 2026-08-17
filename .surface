@@ -1,0 +1,696 @@
+administratio
+administratio expenses
+administratio expenses add [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
+administratio expenses edit <id> [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
+administratio expenses list
+administratio expenses show <id>
+administratio mileage-claims
+administratio mileage-claims list
+administratio mileage-claims show <id>
+administratio revenues
+administratio revenues add [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
+administratio revenues edit <id> [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
+administratio revenues list
+administratio revenues show <id>
+administratio structures
+administratio structures list
+administratio transactions
+administratio transactions ignore <id>
+administratio transactions list
+administratio transactions reconcile <id> [--expense-id <id>] [--revenue-id <id>]
+administratio transactions restore <id>
+administratio transactions show <id>
+administratio transactions unreconcile <id>
+answers
+answers add <titre> [--project <id>] [--parent <id>] [--body <html>]
+answers archive <id>
+answers boost <id>
+answers comment <id> <corps html>
+answers copy <id> --to <project_id> [--to <project_id>]
+answers edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+answers list [--parent <id>]
+answers move <id> --to <project_id> [--to <project_id>]
+answers read <id>
+answers restore <id>
+answers show <id>
+answers subscribe <id>
+answers trash <id>
+answers unboost <id>
+answers unsubscribe <id>
+api <get|post|patch|put|delete> <chemin> [json]
+auth
+auth login [--token <jeton>] [--hub <id>]
+auth logout
+auth status
+auth token
+cardcolumns
+cardcolumns add <titre> [--project <id>] [--parent <id>] [--kind <genre>]
+cardcolumns archive <id>
+cardcolumns boost <id>
+cardcolumns comment <id> <corps html>
+cardcolumns copy <id> --to <project_id> [--to <project_id>]
+cardcolumns edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+cardcolumns list [--parent <id>]
+cardcolumns move <id> --to <project_id> [--to <project_id>]
+cardcolumns read <id>
+cardcolumns restore <id>
+cardcolumns show <id>
+cardcolumns subscribe <id>
+cardcolumns trash <id>
+cardcolumns unboost <id>
+cardcolumns unsubscribe <id>
+cards
+cards add <titre> [--project <id>] [--parent <id>] [--due-on <date>] [--body <html>]
+cards archive <id>
+cards assign <id> <user_id…>
+cards boost <id>
+cards comment <id> <corps html>
+cards copy <id> --to <project_id> [--to <project_id>]
+cards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+cards list [--parent <id>]
+cards move <id> --to <project_id> [--to <project_id>]
+cards move-column <id> --to <column_recording_id> [--to <id>]
+cards read <id>
+cards restore <id>
+cards show <id>
+cards subscribe <id>
+cards trash <id>
+cards unboost <id>
+cards unsubscribe <id>
+cardtables
+cardtables archive <id>
+cardtables boost <id>
+cardtables comment <id> <corps html>
+cardtables copy <id> --to <project_id> [--to <project_id>]
+cardtables edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+cardtables list [--parent <id>]
+cardtables move <id> --to <project_id> [--to <project_id>]
+cardtables read <id>
+cardtables restore <id>
+cardtables show <id>
+cardtables subscribe <id>
+cardtables trash <id>
+cardtables unboost <id>
+cardtables unsubscribe <id>
+chat
+chat archive <id>
+chat boost <id>
+chat comment <id> <corps html>
+chat copy <id> --to <project_id> [--to <project_id>]
+chat edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+chat list [--parent <id>]
+chat move <id> --to <project_id> [--to <project_id>]
+chat read <id>
+chat restore <id>
+chat show <id>
+chat subscribe <id>
+chat trash <id>
+chat unboost <id>
+chat unsubscribe <id>
+checkins
+checkins archive <id>
+checkins boost <id>
+checkins comment <id> <corps html>
+checkins copy <id> --to <project_id> [--to <project_id>]
+checkins edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+checkins list [--parent <id>]
+checkins move <id> --to <project_id> [--to <project_id>]
+checkins read <id>
+checkins restore <id>
+checkins show <id>
+checkins subscribe <id>
+checkins trash <id>
+checkins unboost <id>
+checkins unsubscribe <id>
+commands
+comments
+comments add <titre> [--project <id>] [--parent <id>] [--body <html>]
+comments archive <id>
+comments boost <id>
+comments comment <id> <corps html>
+comments copy <id> --to <project_id> [--to <project_id>]
+comments edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+comments list [--parent <id>]
+comments move <id> --to <project_id> [--to <project_id>]
+comments read <id>
+comments restore <id>
+comments show <id>
+comments subscribe <id>
+comments trash <id>
+comments unboost <id>
+comments unsubscribe <id>
+completion <bash|zsh|fish>
+concepts
+concepts add <titre> [--project <id>] [--parent <id>] [--width-m <m>] [--height-m <m>]
+concepts archive <id>
+concepts boost <id>
+concepts comment <id> <corps html>
+concepts copy <id> --to <project_id> [--to <project_id>]
+concepts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+concepts list [--parent <id>]
+concepts move <id> --to <project_id> [--to <project_id>]
+concepts read <id>
+concepts restore <id>
+concepts show <id>
+concepts subscribe <id>
+concepts trash <id>
+concepts unboost <id>
+concepts unsubscribe <id>
+contacts
+contacts add <titre> [--project <id>] [--parent <id>] [--kind <genre>]
+contacts archive <id>
+contacts boost <id>
+contacts comment <id> <corps html>
+contacts copy <id> --to <project_id> [--to <project_id>]
+contacts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+contacts list [--parent <id>]
+contacts move <id> --to <project_id> [--to <project_id>]
+contacts read <id>
+contacts restore <id>
+contacts show <id>
+contacts subscribe <id>
+contacts trash <id>
+contacts unboost <id>
+contacts unsubscribe <id>
+docs
+docs add <titre> [--project <id>] [--parent <id>] [--body <html>]
+docs archive <id>
+docs boost <id>
+docs comment <id> <corps html>
+docs copy <id> --to <project_id> [--to <project_id>]
+docs edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+docs list [--parent <id>]
+docs move <id> --to <project_id> [--to <project_id>]
+docs read <id>
+docs restore <id>
+docs show <id>
+docs subscribe <id>
+docs trash <id>
+docs unboost <id>
+docs unsubscribe <id>
+doctor
+enrollments
+enrollments add [--member-id <id>] [--role <rôle>]
+enrollments list
+enrollments remove <id>
+events
+events add <titre> [--project <id>] [--parent <id>] [--starts-at <horodate>] [--ends-at <horodate>] [--all-day] [--location <lieu>]
+events archive <id>
+events boost <id>
+events comment <id> <corps html>
+events copy <id> --to <project_id> [--to <project_id>]
+events edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+events list [--parent <id>]
+events move <id> --to <project_id> [--to <project_id>]
+events read <id>
+events restore <id>
+events show <id>
+events subscribe <id>
+events trash <id>
+events unboost <id>
+events unsubscribe <id>
+folders
+folders add <titre> [--project <id>] [--parent <id>]
+folders archive <id>
+folders boost <id>
+folders comment <id> <corps html>
+folders copy <id> --to <project_id> [--to <project_id>]
+folders edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+folders list [--parent <id>]
+folders move <id> --to <project_id> [--to <project_id>]
+folders read <id>
+folders restore <id>
+folders show <id>
+folders subscribe <id>
+folders trash <id>
+folders unboost <id>
+folders unsubscribe <id>
+forwards
+forwards add <titre> [--project <id>] [--parent <id>] [--from-email <email>] [--subject <objet>]
+forwards archive <id>
+forwards boost <id>
+forwards comment <id> <corps html>
+forwards copy <id> --to <project_id> [--to <project_id>]
+forwards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+forwards list [--parent <id>]
+forwards move <id> --to <project_id> [--to <project_id>]
+forwards read <id>
+forwards restore <id>
+forwards show <id>
+forwards subscribe <id>
+forwards trash <id>
+forwards unboost <id>
+forwards unsubscribe <id>
+grants
+grants add [--user-id <id>] [--interface <clé>]
+grants list
+grants remove <id>
+hillcharts
+hillcharts archive <id>
+hillcharts boost <id>
+hillcharts comment <id> <corps html>
+hillcharts copy <id> --to <project_id> [--to <project_id>]
+hillcharts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+hillcharts list [--parent <id>]
+hillcharts move <id> --to <project_id> [--to <project_id>]
+hillcharts read <id>
+hillcharts restore <id>
+hillcharts show <id>
+hillcharts subscribe <id>
+hillcharts trash <id>
+hillcharts unboost <id>
+hillcharts unsubscribe <id>
+hubs
+hubs list
+hubs use <id>
+interventions
+interventions add <titre> [--project <id>] [--parent <id>] [--happened-on <date>] [--kind <genre>] [--notes <texte>]
+interventions archive <id>
+interventions boost <id>
+interventions comment <id> <corps html>
+interventions copy <id> --to <project_id> [--to <project_id>]
+interventions edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+interventions list [--parent <id>]
+interventions move <id> --to <project_id> [--to <project_id>]
+interventions read <id>
+interventions restore <id>
+interventions show <id>
+interventions subscribe <id>
+interventions trash <id>
+interventions unboost <id>
+interventions unsubscribe <id>
+links
+links add <titre> [--project <id>] [--parent <id>] [--url <url>] [--service <nom>] [--notes <texte>]
+links archive <id>
+links boost <id>
+links comment <id> <corps html>
+links copy <id> --to <project_id> [--to <project_id>]
+links edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+links list [--parent <id>]
+links move <id> --to <project_id> [--to <project_id>]
+links read <id>
+links restore <id>
+links show <id>
+links subscribe <id>
+links trash <id>
+links unboost <id>
+links unsubscribe <id>
+markers
+markers add <titre> [--project <id>] [--parent <id>] [--x <0..1>] [--y <0..1>] [--species-name <nom>] [--palette-item-id <id>]
+markers archive <id>
+markers boost <id>
+markers comment <id> <corps html>
+markers copy <id> --to <project_id> [--to <project_id>]
+markers edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+markers list [--parent <id>]
+markers move <id> --to <project_id> [--to <project_id>]
+markers read <id>
+markers restore <id>
+markers show <id>
+markers subscribe <id>
+markers trash <id>
+markers unboost <id>
+markers unsubscribe <id>
+me
+messageboards
+messageboards archive <id>
+messageboards boost <id>
+messageboards comment <id> <corps html>
+messageboards copy <id> --to <project_id> [--to <project_id>]
+messageboards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+messageboards list [--parent <id>]
+messageboards move <id> --to <project_id> [--to <project_id>]
+messageboards read <id>
+messageboards restore <id>
+messageboards show <id>
+messageboards subscribe <id>
+messageboards trash <id>
+messageboards unboost <id>
+messageboards unsubscribe <id>
+messages
+messages add <titre> [--project <id>] [--parent <id>] [--body <html>] [--category <clé>]
+messages archive <id>
+messages boost <id>
+messages comment <id> <corps html>
+messages copy <id> --to <project_id> [--to <project_id>]
+messages edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+messages list [--parent <id>]
+messages move <id> --to <project_id> [--to <project_id>]
+messages read <id>
+messages restore <id>
+messages show <id>
+messages subscribe <id>
+messages trash <id>
+messages unboost <id>
+messages unsubscribe <id>
+network
+network hubs
+network hubs add [--name <nom>] [--subdomain <clé>]
+network hubs edit <id> [--name <nom>] [--default-locale <locale>]
+network hubs list
+network hubs remove <id>
+network hubs show <id>
+nurserio
+nurserio containers
+nurserio containers list
+nurserio sites
+nurserio sites list
+nurserio stock-batches
+nurserio stock-batches add [--variety-id <id>] [--site-id <id>] [--container-id <id>] [--quantity <n>] [--status <statut>]
+nurserio stock-batches edit <id> [--quantity <n>] [--status <statut>]
+nurserio stock-batches list
+nurserio stock-batches show <id>
+palette-items
+palette-items add <titre> [--project <id>] [--parent <id>] [--name <latin>] [--common-name <nom>] [--strata <strate>] [--quantity <n>] [--unit-price-cents <n>] [--external-variety-id <id>]
+palette-items archive <id>
+palette-items boost <id>
+palette-items comment <id> <corps html>
+palette-items copy <id> --to <project_id> [--to <project_id>]
+palette-items edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+palette-items list [--parent <id>]
+palette-items move <id> --to <project_id> [--to <project_id>]
+palette-items read <id>
+palette-items restore <id>
+palette-items show <id>
+palette-items subscribe <id>
+palette-items trash <id>
+palette-items unboost <id>
+palette-items unsubscribe <id>
+palettes
+palettes archive <id>
+palettes boost <id>
+palettes comment <id> <corps html>
+palettes copy <id> --to <project_id> [--to <project_id>]
+palettes edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+palettes list [--parent <id>]
+palettes move <id> --to <project_id> [--to <project_id>]
+palettes read <id>
+palettes restore <id>
+palettes show <id>
+palettes subscribe <id>
+palettes trash <id>
+palettes unboost <id>
+palettes unsubscribe <id>
+participant-categories
+participant-categories add <titre> [--project <id>] [--parent <id>] [--label <libellé>] [--price-cents <n>] [--quota <n>]
+participant-categories archive <id>
+participant-categories boost <id>
+participant-categories comment <id> <corps html>
+participant-categories copy <id> --to <project_id> [--to <project_id>]
+participant-categories edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+participant-categories list [--parent <id>]
+participant-categories move <id> --to <project_id> [--to <project_id>]
+participant-categories read <id>
+participant-categories restore <id>
+participant-categories show <id>
+participant-categories subscribe <id>
+participant-categories trash <id>
+participant-categories unboost <id>
+participant-categories unsubscribe <id>
+participant-lists
+participant-lists archive <id>
+participant-lists boost <id>
+participant-lists comment <id> <corps html>
+participant-lists copy <id> --to <project_id> [--to <project_id>]
+participant-lists edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+participant-lists list [--parent <id>]
+participant-lists move <id> --to <project_id> [--to <project_id>]
+participant-lists read <id>
+participant-lists restore <id>
+participant-lists show <id>
+participant-lists subscribe <id>
+participant-lists trash <id>
+participant-lists unboost <id>
+participant-lists unsubscribe <id>
+participants
+participants add <titre> [--project <id>] [--parent <id>] [--contact-id <id>] [--participant-category-id <id>] [--status <statut>]
+participants archive <id>
+participants boost <id>
+participants comment <id> <corps html>
+participants copy <id> --to <project_id> [--to <project_id>]
+participants edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+participants list [--parent <id>]
+participants move <id> --to <project_id> [--to <project_id>]
+participants read <id>
+participants restore <id>
+participants show <id>
+participants subscribe <id>
+participants trash <id>
+participants unboost <id>
+participants unsubscribe <id>
+people
+people add [--email <email>] [--first-name <prénom>] [--last-name <nom>]
+people list
+people show <id>
+plant-records
+plant-records add <titre> [--project <id>] [--parent <id>] [--status <statut>] [--plant-marker-id <id>]
+plant-records archive <id>
+plant-records boost <id>
+plant-records comment <id> <corps html>
+plant-records copy <id> --to <project_id> [--to <project_id>]
+plant-records edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+plant-records list [--parent <id>]
+plant-records move <id> --to <project_id> [--to <project_id>]
+plant-records read <id>
+plant-records restore <id>
+plant-records show <id>
+plant-records subscribe <id>
+plant-records trash <id>
+plant-records unboost <id>
+plant-records unsubscribe <id>
+planto
+planto genera
+planto genera add [--name <nom>]
+planto genera edit <id> [--name <nom>] [--description <texte>]
+planto genera list [--q <texte>]
+planto genera show <id>
+planto species
+planto species add [--genus-id <id>] [--name <nom>]
+planto species edit <id> [--name <nom>] [--description <texte>]
+planto species list [--q <texte>] [--genus-id <id>]
+planto species show <id>
+planto varieties
+planto varieties add [--species-id <id>] [--name <nom>]
+planto varieties edit <id> [--name <nom>] [--description <texte>]
+planto varieties list [--q <texte>] [--species-id <id>]
+planto varieties show <id>
+projects
+projects add [--name <nom>] [--kind <genre>] [--description <texte>] [--access <accès>]
+projects list
+projects show <id>
+projects tools <project_id> [--install <kind>] [--name <nom>]
+questions
+questions add <titre> [--project <id>] [--parent <id>] [--frequency <règle>]
+questions archive <id>
+questions boost <id>
+questions comment <id> <corps html>
+questions copy <id> --to <project_id> [--to <project_id>]
+questions edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+questions list [--parent <id>]
+questions move <id> --to <project_id> [--to <project_id>]
+questions read <id>
+questions restore <id>
+questions show <id>
+questions subscribe <id>
+questions trash <id>
+questions unboost <id>
+questions unsubscribe <id>
+quick-start
+quote-lines
+quote-lines add <titre> [--project <id>] [--parent <id>] [--description <texte>] [--quantity <n>] [--unit <unité>] [--unit-price-cents <n>]
+quote-lines archive <id>
+quote-lines boost <id>
+quote-lines comment <id> <corps html>
+quote-lines copy <id> --to <project_id> [--to <project_id>]
+quote-lines edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+quote-lines list [--parent <id>]
+quote-lines move <id> --to <project_id> [--to <project_id>]
+quote-lines read <id>
+quote-lines restore <id>
+quote-lines show <id>
+quote-lines subscribe <id>
+quote-lines trash <id>
+quote-lines unboost <id>
+quote-lines unsubscribe <id>
+quotes
+quotes add <titre> [--project <id>] [--parent <id>] [--vat-rate <taux>] [--valid-until <date>]
+quotes archive <id>
+quotes boost <id>
+quotes comment <id> <corps html>
+quotes copy <id> --to <project_id> [--to <project_id>]
+quotes edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+quotes list [--parent <id>]
+quotes move <id> --to <project_id> [--to <project_id>]
+quotes read <id>
+quotes restore <id>
+quotes show <id>
+quotes subscribe <id>
+quotes trash <id>
+quotes unboost <id>
+quotes unsubscribe <id>
+recordings
+recordings archive <id>
+recordings boost <id>
+recordings comment <id> <corps html>
+recordings copy <id> --to <project_id> [--to <project_id>]
+recordings list [--type <Type>] [--assigned-to <user_id>]
+recordings move <id> --to <project_id> [--to <project_id>]
+recordings read <id>
+recordings restore <id>
+recordings show <id>
+recordings subscribe <id>
+recordings trash <id>
+recordings unboost <id>
+recordings unsubscribe <id>
+schedules
+schedules archive <id>
+schedules boost <id>
+schedules comment <id> <corps html>
+schedules copy <id> --to <project_id> [--to <project_id>]
+schedules edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+schedules list [--parent <id>]
+schedules move <id> --to <project_id> [--to <project_id>]
+schedules read <id>
+schedules restore <id>
+schedules show <id>
+schedules subscribe <id>
+schedules trash <id>
+schedules unboost <id>
+schedules unsubscribe <id>
+session-feedbacks
+session-feedbacks add <titre> [--project <id>] [--parent <id>] [--schedule-entry-id <id>] [--contact-id <id>] [--rating <n>] [--comment <texte>]
+session-feedbacks archive <id>
+session-feedbacks boost <id>
+session-feedbacks comment <id> <corps html>
+session-feedbacks copy <id> --to <project_id> [--to <project_id>]
+session-feedbacks edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+session-feedbacks list [--parent <id>]
+session-feedbacks move <id> --to <project_id> [--to <project_id>]
+session-feedbacks read <id>
+session-feedbacks restore <id>
+session-feedbacks show <id>
+session-feedbacks subscribe <id>
+session-feedbacks trash <id>
+session-feedbacks unboost <id>
+session-feedbacks unsubscribe <id>
+setup <claude|codex>
+skill
+skill install [--dir <chemin>]
+skill list
+skill show <nom>
+surface
+timesheets
+timesheets add <titre> [--project <id>] [--parent <id>] [--worked-on <date>] [--hours <n>] [--billable] [--description <texte>] [--phase <phase>]
+timesheets archive <id>
+timesheets boost <id>
+timesheets comment <id> <corps html>
+timesheets copy <id> --to <project_id> [--to <project_id>]
+timesheets edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+timesheets list [--parent <id>]
+timesheets move <id> --to <project_id> [--to <project_id>]
+timesheets read <id>
+timesheets restore <id>
+timesheets show <id>
+timesheets subscribe <id>
+timesheets trash <id>
+timesheets unboost <id>
+timesheets unsubscribe <id>
+todogroups
+todogroups add <titre> [--project <id>] [--parent <id>]
+todogroups archive <id>
+todogroups boost <id>
+todogroups comment <id> <corps html>
+todogroups copy <id> --to <project_id> [--to <project_id>]
+todogroups edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+todogroups list [--parent <id>]
+todogroups move <id> --to <project_id> [--to <project_id>]
+todogroups read <id>
+todogroups restore <id>
+todogroups show <id>
+todogroups subscribe <id>
+todogroups trash <id>
+todogroups unboost <id>
+todogroups unsubscribe <id>
+todolists
+todolists add <titre> [--project <id>] [--parent <id>] [--description <texte>]
+todolists archive <id>
+todolists boost <id>
+todolists comment <id> <corps html>
+todolists copy <id> --to <project_id> [--to <project_id>]
+todolists edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+todolists list [--parent <id>]
+todolists move <id> --to <project_id> [--to <project_id>]
+todolists read <id>
+todolists restore <id>
+todolists show <id>
+todolists subscribe <id>
+todolists trash <id>
+todolists unboost <id>
+todolists unsubscribe <id>
+todos
+todos add <titre> [--project <id>] [--parent <id>] [--due-on <date>] [--starts-on <date>] [--recurrence <règle>] [--recurrence-until <date>]
+todos archive <id>
+todos assign <id> <user_id…>
+todos boost <id>
+todos comment <id> <corps html>
+todos copy <id> --to <project_id> [--to <project_id>]
+todos edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+todos list [--parent <id>]
+todos move <id> --to <project_id> [--to <project_id>]
+todos read <id>
+todos restore <id>
+todos show <id>
+todos subscribe <id>
+todos trash <id>
+todos unboost <id>
+todos unsubscribe <id>
+todosets
+todosets archive <id>
+todosets boost <id>
+todosets comment <id> <corps html>
+todosets copy <id> --to <project_id> [--to <project_id>]
+todosets edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+todosets list [--parent <id>]
+todosets move <id> --to <project_id> [--to <project_id>]
+todosets read <id>
+todosets restore <id>
+todosets show <id>
+todosets subscribe <id>
+todosets trash <id>
+todosets unboost <id>
+todosets unsubscribe <id>
+training-documents
+training-documents add <titre> [--project <id>] [--parent <id>] [--name <nom>] [--schedule-entry-id <id>]
+training-documents archive <id>
+training-documents boost <id>
+training-documents comment <id> <corps html>
+training-documents copy <id> --to <project_id> [--to <project_id>]
+training-documents edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+training-documents list [--parent <id>]
+training-documents move <id> --to <project_id> [--to <project_id>]
+training-documents read <id>
+training-documents restore <id>
+training-documents show <id>
+training-documents subscribe <id>
+training-documents trash <id>
+training-documents unboost <id>
+training-documents unsubscribe <id>
+upgrade
+uploads
+uploads add <titre> [--project <id>] [--parent <id>] [--file <chemin>] [--caption <texte>]
+uploads archive <id>
+uploads boost <id>
+uploads comment <id> <corps html>
+uploads copy <id> --to <project_id> [--to <project_id>]
+uploads edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+uploads list [--parent <id>]
+uploads move <id> --to <project_id> [--to <project_id>]
+uploads read <id>
+uploads restore <id>
+uploads show <id>
+uploads subscribe <id>
+uploads trash <id>
+uploads unboost <id>
+uploads unsubscribe <id>
+url <url>
+version

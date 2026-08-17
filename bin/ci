@@ -1,0 +1,34 @@
+#!/bin/sh
+# La CI locale — le même verdict que la distante, sur la machine de dev (ISC-432).
+set -e
+cd "$(dirname "$0")/.."
+
+echo "── gofmt ──"
+unformatted=$(gofmt -l .)
+if [ -n "$unformatted" ]; then
+  echo "fichiers non formatés :" && echo "$unformatted" && exit 1
+fi
+
+echo "── go vet ──"
+go vet ./...
+
+echo "── go build ──"
+go build ./...
+
+echo "── go test (unitaires + gates : surface, couverture d'API, breadcrumbs) ──"
+go test ./...
+
+echo "── surface à jour ──"
+go build -o /tmp/terranova-ci ./cmd/terranova
+/tmp/terranova-ci surface | diff -q .surface - >/dev/null || {
+  echo ".surface n'est pas à jour — \`terranova surface > .surface\` et relis le diff" && exit 1
+}
+
+echo "── dérive des skills ──"
+go test ./internal/commands -run TestSkillsDontDrift
+
+echo
+echo "CI locale verte."
+
+echo "── skills embarqués = skills/ ──"
+diff -r skills internal/commands/skills_embedded

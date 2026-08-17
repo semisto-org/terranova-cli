@@ -1,0 +1,272 @@
+package commands
+
+import (
+	"fmt"
+	"net/url"
+	"os"
+	"regexp"
+	"sort"
+	"strings"
+
+	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/config"
+)
+
+func init() {
+	cli.Register(&cli.Command{
+		Name: "surface", Group: "Additional",
+		Summary: "Imprime le snapshot de surface (.surface) — chaque commande, argument, drapeau (ISC-392).",
+		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+			fmt.Print(SurfaceSnapshot())
+			return nil, nil
+		},
+	})
+
+	cli.Register(&cli.Command{
+		Name: "doctor", Group: "Auth & Config",
+		Summary: "Santé : binaire, config, jeton, connexion, identité (ISC-428).",
+		APIOps:  []string{"GET /health", "GET /me"},
+		Run:     runDoctor,
+	})
+
+	cli.Register(&cli.Command{
+		Name: "completion", Group: "Additional",
+		Summary: "Complétion shell : bash, zsh ou fish (ISC-427).",
+		ArgSpec: "<bash|zsh|fish>", MinArgs: 1,
+		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+			script, err := completionScript(args[0])
+			if err != nil {
+				return nil, err
+			}
+			fmt.Print(script)
+			return nil, nil
+		},
+	})
+
+	cli.Register(&cli.Command{
+		Name: "url", Group: "Search & Browse",
+		Summary: "Résout une URL Terranova en objet + commandes suggérées (ISC-394).",
+		ArgSpec: "<url>", MinArgs: 1,
+		Run: runURL,
+	})
+
+	cli.Register(&cli.Command{
+		Name: "quick-start", Group: "Auth & Config",
+		Summary: "Le chemin de la première commande utile, sans documentation externe (ISC-429).",
+		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
+			steps := []string{
+				"1. Émets ton jeton dans l'app : Compte & réglages → Jetons CLI (https://app.semisto.org/account/api_tokens).",
+				"2. `terranova auth login` — colle le jeton (il part au trousseau, jamais dans un fichier du dépôt).",
+				"3. `terranova me` — vérifie qui tu es et ce que tu peux faire.",
+				"4. `terranova projects list` — tes projets ; `terranova todos list -p <id>` — les tâches d'un projet.",
+				"5. `terranova todos add \"Ma tâche\" -p <id> --due-on 2026-09-01` — ta première écriture.",
+				"6. `terranova commands` — toute la surface ; `--agent` sur n'importe quoi pour le JSON.",
+			}
+			if !c.Flags.JSON && c.IsTTY {
+				for _, s := range steps {
+					fmt.Println(s)
+				}
+				return nil, nil
+			}
+			return &cli.Result{Data: steps}, nil
+		},
+	})
+}
+
+// SurfaceSnapshot rend la surface complète en texte stable, triée.
+func SurfaceSnapshot() string {
+	lines := []string{}
+	cli.Walk(func(path string, c *cli.Command) {
+		entry := path
+		if c.ArgSpec != "" {
+			entry += " " + c.ArgSpec
+		}
+		for _, f := range c.Flags {
+			entry += " [--" + f.Name
+			if f.Arg != "" {
+				entry += " <" + f.Arg + ">"
+			}
+			entry += "]"
+		}
+		lines = append(lines, entry)
+	})
+	sort.Strings(lines)
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// AllAPIOps agrège les opérations d'API couvertes par la surface (gate ISC-390).
+func AllAPIOps() map[string]bool {
+	ops := map[string]bool{}
+	cli.Walk(func(path string, c *cli.Command) {
+		for _, op := range c.APIOps {
+			ops[op] = true
+		}
+	})
+	return ops
+}
+
+func runDoctor(c *cli.Ctx, args []string) (*cli.Result, error) {
+	type check struct {
+		Name string `json:"name"`
+		OK   bool   `json:"ok"`
+		Note string `json:"note,omitempty"`
+	}
+	checks := []check{}
+	add := func(name string, ok bool, note string) { checks = append(checks, check{name, ok, note}) }
+
+	add("binaire", true, "version "+c.Version)
+	add("config", true, config.Dir())
+
+	token, err := config.Token(c.Profile)
+	add("jeton (profil "+c.Profile+")", err == nil && token != "", noteIf(err))
+
+	client, err := c.API()
+	if err != nil {
+		add("connexion", false, err.Error())
+	} else {
+		var health map[string]any
+		if err := client.Get("/health", &health); err != nil {
+			add("connexion "+client.BaseURL, false, err.Error())
+		} else {
+			add("connexion "+client.BaseURL, true, str(health["revision"]))
+		}
+		var me struct {
+			Me map[string]any `json:"me"`
+		}
+		if err := client.Get("/me", &me); err != nil {
+			add("identité", false, err.Error())
+		} else {
+			add("identité", true, str(me.Me["name"])+" · hub "+str(dig(me.Me, "current_hub", "name")))
+		}
+	}
+
+	for _, plugin := range []string{".claude-plugin", ".codex-plugin"} {
+		home, _ := os.UserHomeDir()
+		_, err := os.Stat(home + "/.claude/plugins/terranova")
+		_ = plugin
+		add("plugin agent", err == nil, "posable via `terranova setup claude`")
+		break
+	}
+
+	allOK := true
+	rows := [][]string{}
+	for _, ch := range checks {
+		mark := "✓"
+		if !ch.OK {
+			mark = "✗"
+			allOK = false
+		}
+		rows = append(rows, []string{mark, ch.Name, ch.Note})
+	}
+	summary := "Tout est en ordre."
+	if !allOK {
+		summary = "Au moins un contrôle échoue — vois le détail."
+	}
+	return &cli.Result{Data: map[string]any{"ok": allOK, "checks": checks},
+		Headers: []string{"", "CONTRÔLE", "NOTE"}, Rows: rows, Summary: summary}, nil
+}
+
+func noteIf(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}
+
+// runURL — le pont entre « je regarde une page » et « je l'automatise ».
+func runURL(c *cli.Ctx, args []string) (*cli.Result, error) {
+	u, err := url.Parse(args[0])
+	if err != nil {
+		return nil, cli.Usagef("URL invalide : %v", err)
+	}
+	path := u.Path
+	type match struct {
+		re    *regexp.Regexp
+		kind  string
+		crumb func(ids []string) []cli.Crumb
+	}
+	matches := []match{
+		{regexp.MustCompile(`^/projects/(\d+)`), "project", func(ids []string) []cli.Crumb {
+			return []cli.Crumb{
+				{Action: "voir le projet", Cmd: "terranova projects show " + ids[0]},
+				{Action: "ses tâches", Cmd: "terranova todos list -p " + ids[0]},
+				{Action: "ses recordings", Cmd: "terranova recordings list -p " + ids[0]},
+			}
+		}},
+		{regexp.MustCompile(`^/(?:todos|messages|documents|cards|events|recordings)/(\d+)`), "recording", func(ids []string) []cli.Crumb {
+			return []cli.Crumb{
+				{Action: "voir", Cmd: "terranova recordings show " + ids[0]},
+				{Action: "commenter", Cmd: "terranova recordings comment " + ids[0] + " <corps>"},
+			}
+		}},
+		{regexp.MustCompile(`^/(administratio|contacto|planto|academio|conceptio|nurserio)`), "lens", func(ids []string) []cli.Crumb {
+			return []cli.Crumb{{Action: "la lentille au CLI", Cmd: "terranova " + ids[0] + " --help"}}
+		}},
+	}
+	for _, m := range matches {
+		if got := m.re.FindStringSubmatch(path); got != nil {
+			ids := got[1:]
+			data := map[string]any{"kind": m.kind, "url": args[0]}
+			if len(ids) > 0 {
+				data["id"] = ids[0]
+			}
+			// Enrichir : si c'est un recording, on va le chercher.
+			if m.kind == "recording" {
+				if client, err := c.API(); err == nil {
+					var out struct {
+						Recording map[string]any `json:"recording"`
+					}
+					if client.Get("/recordings/"+ids[0], &out) == nil {
+						data["recording"] = out.Recording
+					}
+				}
+			}
+			return &cli.Result{Data: data, Crumbs: m.crumb(ids),
+				Summary: "Reconnu : " + m.kind + "."}, nil
+		}
+	}
+	return nil, fmt.Errorf("URL non reconnue — motifs connus : /projects/<id>, /<type>/<id>, /<lentille>")
+}
+
+// completionScript génère la complétion depuis le registre.
+func completionScript(shell string) (string, error) {
+	// La table plate commande → sous-commandes.
+	subs := map[string][]string{}
+	tops := []string{}
+	for _, cmd := range cli.Registry {
+		tops = append(tops, cmd.Name)
+		for _, s := range cmd.Sub {
+			subs[cmd.Name] = append(subs[cmd.Name], s.Name)
+		}
+	}
+	sort.Strings(tops)
+	switch shell {
+	case "bash", "zsh":
+		var b strings.Builder
+		b.WriteString("# Complétion terranova — générée par `terranova completion " + shell + "`\n")
+		b.WriteString("_terranova() {\n  local cur prev\n  cur=\"${COMP_WORDS[COMP_CWORD]}\"\n  prev=\"${COMP_WORDS[COMP_CWORD-1]}\"\n")
+		b.WriteString("  case \"$prev\" in\n")
+		for _, top := range tops {
+			if len(subs[top]) > 0 {
+				b.WriteString("    " + top + ") COMPREPLY=($(compgen -W \"" + strings.Join(subs[top], " ") + "\" -- \"$cur\")); return;;\n")
+			}
+		}
+		b.WriteString("  esac\n")
+		b.WriteString("  COMPREPLY=($(compgen -W \"" + strings.Join(tops, " ") + "\" -- \"$cur\"))\n}\n")
+		b.WriteString("complete -F _terranova terranova\n")
+		if shell == "zsh" {
+			return "autoload -U +X bashcompinit && bashcompinit\n" + b.String(), nil
+		}
+		return b.String(), nil
+	case "fish":
+		var b strings.Builder
+		for _, top := range tops {
+			b.WriteString("complete -c terranova -n '__fish_use_subcommand' -a '" + top + "'\n")
+			for _, s := range subs[top] {
+				b.WriteString("complete -c terranova -n '__fish_seen_subcommand_from " + top + "' -a '" + s + "'\n")
+			}
+		}
+		return b.String(), nil
+	}
+	return "", cli.Usagef("shell inconnu : %s (bash|zsh|fish)", shell)
+}

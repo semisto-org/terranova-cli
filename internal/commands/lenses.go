@@ -19,9 +19,11 @@ type restSpec struct {
 	Show    bool
 	Create  []cli.Flag // nil = pas de création
 	Update  []cli.Flag // nil = pas d'édition
-	Delete  bool
-	Filters []cli.Flag // filtres de l'index (q, genus_id…)
-	Scope   string     // note d'aide : le scope exigé
+	// UpdateMethod : PATCH par défaut ; les hubs s'éditent en PUT.
+	UpdateMethod string
+	Delete       bool
+	Filters      []cli.Flag // filtres de l'index (q, genus_id…)
+	Scope        string     // note d'aide : le scope exigé
 }
 
 func (s restSpec) key() string {
@@ -103,10 +105,14 @@ func buildRestCommand(s restSpec) *cli.Command {
 		})
 	}
 	if s.Update != nil {
-		cmd.APIOps = append(cmd.APIOps, "PATCH "+s.Base+"/{id}")
+		method := s.UpdateMethod
+		if method == "" {
+			method = "PATCH"
+		}
+		cmd.APIOps = append(cmd.APIOps, method+" "+s.Base+"/{id}")
 		cmd.Sub = append(cmd.Sub, &cli.Command{
 			Name: "edit", Summary: "Modifie.", ArgSpec: "<id>", MinArgs: 1, Flags: s.Update,
-			APIOps: []string{"PATCH " + s.Base + "/{id}"},
+			APIOps: []string{method + " " + s.Base + "/{id}"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				body, _ := flagsToBody(s.Update, args[1:])
 				if len(body) == 0 {
@@ -117,7 +123,7 @@ func buildRestCommand(s restSpec) *cli.Command {
 					return nil, err
 				}
 				var out map[string]any
-				if err := client.Patch(s.Base+"/"+args[0], body, &out); err != nil {
+				if err := client.Do(method, s.Base+"/"+args[0], body, &out); err != nil {
 					return nil, err
 				}
 				return &cli.Result{Data: out, Summary: "Modifié."}, nil
@@ -339,10 +345,14 @@ func init() {
 	// ── Network (ISC-419) — superadmin ──
 	networkHubs := buildRestCommand(restSpec{
 		Cmd: "hubs", Base: "/hubs", Summary: "Tous les hubs du réseau (superadmin).",
-		List: true, Show: true, Delete: true, Scope: "network",
+		List: true, Show: true, Delete: true, Scope: "network", UpdateMethod: "PUT",
 		Create: []cli.Flag{
 			{Name: "name", Arg: "nom", Help: "Nom du hub."},
 			{Name: "subdomain", Arg: "clé", Help: "Sous-domaine."},
+		},
+		Update: []cli.Flag{
+			{Name: "name", Arg: "nom", Help: "Nom du hub."},
+			{Name: "default-locale", Arg: "locale", Help: "Locale par défaut."},
 		},
 	})
 	cli.Register(group("network", "Lentilles",

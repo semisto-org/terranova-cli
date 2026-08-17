@@ -1,0 +1,7 @@
+{
+  "name": "terranova",
+  "description": "Pilote Terranova (app.semisto.org) depuis le shell — projets, tâches, comptabilité, catalogue botanique, pépinière. Installe les skills embarqués : `terranova setup claude`.",
+  "version": "0.1.0",
+  "skills": ["terranova", "terranova-doctor"],
+  "install": "terranova setup claude"
+}
