@@ -7,11 +7,7 @@ Chaque opération de `/api/v1/openapi` a une commande CLI **ou** une ligne d'exe
 | Opération | Motif |
 |---|---|
 
-*(aucune — la surface couvre les 37 chemins du spec du 2026-08-18)*
-
-## Gestes non documentés au spec (écart côté app, pas côté CLI)
-
-Les routes de gestes de la spine (`/recordings/{id}/comments·boost·subscribe·read·archive·restore·assignees·column·move·copy`) sont **livrées et testées côté app** (ISC-440, PR #535→#537) mais le générateur OpenAPI ne les documente pas encore. Le CLI les couvre ; le test `TestDeclaredOpsExistInSpec` porte une tolérance NOMMÉE sur ce préfixe, à retirer quand le générateur les documentera.
+*(aucune — la surface couvre les 53 chemins du spec du 2026-08-18, gestes de la spine compris)*
 
 ## Le gate inverse (ISC-391) — ce que l'app doit encore faire naître
 
@@ -19,10 +15,8 @@ Une commande listée par l'ISA sans endpoint est un défaut de l'APP. Relevé au
 
 | Manque côté app | ISC | Commande CLI en attente |
 |---|---|---|
-| Lignes de chat (CampfireLine, annexe sans surface) | ISC-401 | `chat post` / `chat lines` |
-| Recherche globale | ISC-407 | `search` |
-| Notifications + pings | ISC-408 | `notifications`, `pings` |
-| Rapports / mes vues | ISC-410 | `my`, `reports` |
+| Pings (conversations 1:1\/groupe) | ISC-408 | `pings` |
+| Rapports + mes timesheets\/bookmarks | ISC-410 | `reports`, `my timesheets`, `my bookmarks` |
 | Academio (activités, séances, packs, présences) | ISC-436 | `academio …` |
 | Paiements et échéanciers | ISC-437 | `payments …` |
 | Adhésion ASBL | ISC-438 | `administratio members …` |

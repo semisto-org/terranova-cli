@@ -97,9 +97,13 @@ chat archive <id>
 chat boost <id>
 chat comment <id> <corps html>
 chat copy <id> --to <project_id> [--to <project_id>]
+chat delete-line <campfire_recording_id> <line_id>
 chat edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
+chat edit-line <campfire_recording_id> <line_id> <texte…>
+chat lines <campfire_recording_id>
 chat list [--parent <id>]
 chat move <id> --to <project_id> [--to <project_id>]
+chat post <campfire_recording_id> <texte…>
 chat read <id>
 chat restore <id>
 chat show <id>
@@ -343,6 +347,9 @@ messages subscribe <id>
 messages trash <id>
 messages unboost <id>
 messages unsubscribe <id>
+my
+my notifications
+my todos
 network
 network hubs
 network hubs add [--name <nom>] [--subdomain <clé>]
@@ -350,6 +357,10 @@ network hubs edit <id> [--name <nom>] [--default-locale <locale>]
 network hubs list
 network hubs remove <id>
 network hubs show <id>
+notifications
+notifications list [--unread]
+notifications read <id> [--unread]
+notifications read-all
 nurserio
 nurserio containers
 nurserio containers list
@@ -557,6 +568,7 @@ schedules subscribe <id>
 schedules trash <id>
 schedules unboost <id>
 schedules unsubscribe <id>
+search <termes…> [--type <Type>]
 session-feedbacks
 session-feedbacks add <titre> [--project <id>] [--parent <id>] [--schedule-entry-id <id>] [--contact-id <id>] [--rating <n>] [--comment <texte>]
 session-feedbacks archive <id>

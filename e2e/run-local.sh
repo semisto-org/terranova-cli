@@ -13,7 +13,10 @@ go build -o /tmp/terranova-e2e ./cmd/terranova
 
 echo "── instance test (base préparée + jeton semé) ──"
 cd "$APP_DIR"
-RAILS_ENV=test bin/rails db:test:prepare
+# La base de test est PARTAGÉE avec `bin/rails test` : schéma frais au départ,
+# et on la REND propre en sortant (sinon les fixtures du prochain `rails test`
+# butent sur nos lignes — violation FK vécue le 2026-08-18).
+RAILS_ENV=test bin/rails db:schema:load >/dev/null
 TOKEN=$(RAILS_ENV=test bin/rails runner '
   hub = Hub.find_or_create_by!(slug: "e2e") { |h| h.name = "E2E" }
   hub.update!(name: "E2E") unless hub.name == "E2E"
@@ -28,7 +31,7 @@ TOKEN=$(RAILS_ENV=test bin/rails runner '
 
 RAILS_ENV=test bin/rails server -p "$PORT" -P /tmp/terranova-e2e-server.pid > /tmp/terranova-e2e-server.log 2>&1 &
 SERVER_PID=$!
-trap '[ -f /tmp/terranova-e2e-server.pid ] && kill $(cat /tmp/terranova-e2e-server.pid) 2>/dev/null; kill $SERVER_PID 2>/dev/null' EXIT
+trap '[ -f /tmp/terranova-e2e-server.pid ] && kill $(cat /tmp/terranova-e2e-server.pid) 2>/dev/null; kill $SERVER_PID 2>/dev/null; (cd "$APP_DIR" && RAILS_ENV=test bin/rails db:schema:load >/dev/null 2>&1)' EXIT
 
 for i in $(seq 1 60); do
   curl -sf "http://127.0.0.1:$PORT/up" >/dev/null 2>&1 && break

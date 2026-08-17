@@ -76,3 +76,32 @@ T="$TERRANOVA_BIN --agent"
   run $T recordings show 99999999
   [ "$status" -eq 5 ]
 }
+
+@test "chat : le dock installe un campfire, on poste, on lit, on édite sa ligne" {
+  pid=$($T projects list --jq '.projects[] | select(.name=="Chantier e2e") | .id' --quiet)
+  run $T projects tools "$pid" --install campfire --name "Feu e2e"
+  [ "$status" -eq 0 ]
+  fire_id=$($T chat list -p "$pid" --ids-only | head -1)
+  [ -n "$fire_id" ]
+  run $T chat post "$fire_id" "Bonjour du parcours e2e"
+  [ "$status" -eq 0 ]
+  run $T chat lines "$fire_id"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Bonjour du parcours e2e"* ]]
+  line_id=$($T chat lines "$fire_id" --ids-only | head -1)
+  run $T chat edit-line "$fire_id" "$line_id" "Bonjour, édité"
+  [ "$status" -eq 0 ]
+}
+
+@test "search : la recherche globale trouve la tâche du parcours" {
+  run $T search "haie e2e"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Planter la haie e2e"* ]]
+}
+
+@test "notifications : la liste répond (vide ou pas), read-all passe" {
+  run $T notifications list
+  [ "$status" -eq 0 ]
+  run $T notifications read-all
+  [ "$status" -eq 0 ]
+}

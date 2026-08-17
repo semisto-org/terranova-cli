@@ -103,15 +103,7 @@ func TestDeclaredOpsExistInSpec(t *testing.T) {
 			specOps[strings.ToUpper(verb)+" "+path] = true
 		}
 	}
-	// Routes de gestes de la spine : livrées côté app (ISC-440) mais pas encore
-	// documentées par le générateur OpenAPI — écart connu, consigné dans
-	// API-COVERAGE.md § « Gestes non documentés au spec ».
-	knownUndocumented := regexp.MustCompile(`^/recordings/\{id\}/`)
 	for op := range AllAPIOps() {
-		parts := strings.SplitN(op, " ", 2)
-		if knownUndocumented.MatchString(parts[1]) {
-			continue
-		}
 		if !specOps[op] {
 			t.Errorf("la surface déclare %q, absent du spec OpenAPI", op)
 		}
