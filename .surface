@@ -12,6 +12,7 @@ academio packs add <participant_id> <training_pack_id> [--quantity <n>] [--price
 academio packs list [--participant <id>]
 academio packs remove <id>
 academio types
+activity
 administratio
 administratio expenses
 administratio expenses add [--label <libellé>] [--amount-cents <n>] [--vat-rate <taux>] [--happened-on <date>] [--category-id <id>] [--structure-id <id>] [--project-id <id>]
@@ -233,6 +234,7 @@ events subscribe <id>
 events trash <id>
 events unboost <id>
 events unsubscribe <id>
+everything
 folders
 folders add <titre> [--project <id>] [--parent <id>]
 folders archive <id>
@@ -303,6 +305,7 @@ interventions subscribe <id>
 interventions trash <id>
 interventions unboost <id>
 interventions unsubscribe <id>
+journal <recording_id>
 links
 links add <titre> [--project <id>] [--parent <id>] [--url <url>] [--service <nom>] [--notes <texte>]
 links archive <id>
