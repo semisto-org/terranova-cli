@@ -291,6 +291,13 @@ func spineGestures(spec typeSpec) []*cli.Command {
 		g("read", msg.HelpRead, "POST", "/read", nil, "POST /recordings/{id}/read"),
 		g("bookmark", msg.HelpBookmark, "POST", "/bookmark", nil, "POST /recordings/{id}/bookmark"),
 		g("unbookmark", msg.HelpUnbookmark, "DELETE", "/bookmark", nil, "DELETE /recordings/{id}/bookmark"),
+		g("bubble-up", msg.HelpBubbleUp, "POST", "/bubble_up", func(a []string) any {
+			if len(a) > 0 {
+				return map[string]any{"when": a[0]}
+			}
+			return nil
+		}, "POST /recordings/{id}/bubble_up"),
+		g("unbubble-up", msg.HelpUnbubbleUp, "DELETE", "/bubble_up", nil, "DELETE /recordings/{id}/bubble_up"),
 		g("archive", msg.HelpArchive, "POST", "/archive", nil, "POST /recordings/{id}/archive"),
 		g("restore", msg.HelpRestore, "POST", "/restore", nil, "POST /recordings/{id}/restore"),
 	}

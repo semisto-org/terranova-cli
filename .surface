@@ -47,6 +47,7 @@ answers add <titre> [--project <id>] [--parent <id>] [--body <html>]
 answers archive <id>
 answers bookmark <id>
 answers boost <id>
+answers bubble-up <id>
 answers comment <id> <corps html>
 answers copy <id> --to <project_id> [--to <project_id>]
 answers edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -59,6 +60,7 @@ answers subscribe <id>
 answers trash <id>
 answers unbookmark <id>
 answers unboost <id>
+answers unbubble-up <id>
 answers unsubscribe <id>
 api <get|post|patch|put|delete> <chemin> [json]
 auth
@@ -71,6 +73,7 @@ cardcolumns add <titre> [--project <id>] [--parent <id>] [--kind <genre>]
 cardcolumns archive <id>
 cardcolumns bookmark <id>
 cardcolumns boost <id>
+cardcolumns bubble-up <id>
 cardcolumns comment <id> <corps html>
 cardcolumns copy <id> --to <project_id> [--to <project_id>]
 cardcolumns edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -83,6 +86,7 @@ cardcolumns subscribe <id>
 cardcolumns trash <id>
 cardcolumns unbookmark <id>
 cardcolumns unboost <id>
+cardcolumns unbubble-up <id>
 cardcolumns unsubscribe <id>
 cards
 cards add <titre> [--project <id>] [--parent <id>] [--due-on <date>] [--body <html>]
@@ -90,6 +94,7 @@ cards archive <id>
 cards assign <id> <user_id…>
 cards bookmark <id>
 cards boost <id>
+cards bubble-up <id>
 cards comment <id> <corps html>
 cards copy <id> --to <project_id> [--to <project_id>]
 cards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -103,11 +108,13 @@ cards subscribe <id>
 cards trash <id>
 cards unbookmark <id>
 cards unboost <id>
+cards unbubble-up <id>
 cards unsubscribe <id>
 cardtables
 cardtables archive <id>
 cardtables bookmark <id>
 cardtables boost <id>
+cardtables bubble-up <id>
 cardtables comment <id> <corps html>
 cardtables copy <id> --to <project_id> [--to <project_id>]
 cardtables edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -120,11 +127,13 @@ cardtables subscribe <id>
 cardtables trash <id>
 cardtables unbookmark <id>
 cardtables unboost <id>
+cardtables unbubble-up <id>
 cardtables unsubscribe <id>
 chat
 chat archive <id>
 chat bookmark <id>
 chat boost <id>
+chat bubble-up <id>
 chat comment <id> <corps html>
 chat copy <id> --to <project_id> [--to <project_id>]
 chat delete-line <campfire_recording_id> <line_id>
@@ -141,11 +150,13 @@ chat subscribe <id>
 chat trash <id>
 chat unbookmark <id>
 chat unboost <id>
+chat unbubble-up <id>
 chat unsubscribe <id>
 checkins
 checkins archive <id>
 checkins bookmark <id>
 checkins boost <id>
+checkins bubble-up <id>
 checkins comment <id> <corps html>
 checkins copy <id> --to <project_id> [--to <project_id>]
 checkins edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -158,6 +169,7 @@ checkins subscribe <id>
 checkins trash <id>
 checkins unbookmark <id>
 checkins unboost <id>
+checkins unbubble-up <id>
 checkins unsubscribe <id>
 commands
 comments
@@ -165,6 +177,7 @@ comments add <titre> [--project <id>] [--parent <id>] [--body <html>]
 comments archive <id>
 comments bookmark <id>
 comments boost <id>
+comments bubble-up <id>
 comments comment <id> <corps html>
 comments copy <id> --to <project_id> [--to <project_id>]
 comments edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -177,6 +190,7 @@ comments subscribe <id>
 comments trash <id>
 comments unbookmark <id>
 comments unboost <id>
+comments unbubble-up <id>
 comments unsubscribe <id>
 completion <bash|zsh|fish>
 concepts
@@ -184,6 +198,7 @@ concepts add <titre> [--project <id>] [--parent <id>] [--width-m <m>] [--height-
 concepts archive <id>
 concepts bookmark <id>
 concepts boost <id>
+concepts bubble-up <id>
 concepts comment <id> <corps html>
 concepts copy <id> --to <project_id> [--to <project_id>]
 concepts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -196,16 +211,19 @@ concepts subscribe <id>
 concepts trash <id>
 concepts unbookmark <id>
 concepts unboost <id>
+concepts unbubble-up <id>
 concepts unsubscribe <id>
 contacts
 contacts add <titre> [--project <id>] [--parent <id>] [--kind <genre>]
 contacts archive <id>
 contacts bookmark <id>
 contacts boost <id>
+contacts bubble-up <id>
 contacts comment <id> <corps html>
 contacts copy <id> --to <project_id> [--to <project_id>]
 contacts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
 contacts list [--parent <id>]
+contacts merge <recording_id_survivant> <recording_id_absorbé>
 contacts move <id> --to <project_id> [--to <project_id>]
 contacts read <id>
 contacts restore <id>
@@ -214,12 +232,14 @@ contacts subscribe <id>
 contacts trash <id>
 contacts unbookmark <id>
 contacts unboost <id>
+contacts unbubble-up <id>
 contacts unsubscribe <id>
 docs
 docs add <titre> [--project <id>] [--parent <id>] [--body <html>]
 docs archive <id>
 docs bookmark <id>
 docs boost <id>
+docs bubble-up <id>
 docs comment <id> <corps html>
 docs copy <id> --to <project_id> [--to <project_id>]
 docs edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -232,6 +252,7 @@ docs subscribe <id>
 docs trash <id>
 docs unbookmark <id>
 docs unboost <id>
+docs unbubble-up <id>
 docs unsubscribe <id>
 doctor
 enrollments
@@ -243,6 +264,7 @@ events add <titre> [--project <id>] [--parent <id>] [--starts-at <horodate>] [--
 events archive <id>
 events bookmark <id>
 events boost <id>
+events bubble-up <id>
 events comment <id> <corps html>
 events copy <id> --to <project_id> [--to <project_id>]
 events edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -255,6 +277,7 @@ events subscribe <id>
 events trash <id>
 events unbookmark <id>
 events unboost <id>
+events unbubble-up <id>
 events unsubscribe <id>
 everything
 folders
@@ -262,6 +285,7 @@ folders add <titre> [--project <id>] [--parent <id>]
 folders archive <id>
 folders bookmark <id>
 folders boost <id>
+folders bubble-up <id>
 folders comment <id> <corps html>
 folders copy <id> --to <project_id> [--to <project_id>]
 folders edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -274,12 +298,14 @@ folders subscribe <id>
 folders trash <id>
 folders unbookmark <id>
 folders unboost <id>
+folders unbubble-up <id>
 folders unsubscribe <id>
 forwards
 forwards add <titre> [--project <id>] [--parent <id>] [--from-email <email>] [--subject <objet>]
 forwards archive <id>
 forwards bookmark <id>
 forwards boost <id>
+forwards bubble-up <id>
 forwards comment <id> <corps html>
 forwards copy <id> --to <project_id> [--to <project_id>]
 forwards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -292,6 +318,7 @@ forwards subscribe <id>
 forwards trash <id>
 forwards unbookmark <id>
 forwards unboost <id>
+forwards unbubble-up <id>
 forwards unsubscribe <id>
 grants
 grants add [--user-id <id>] [--interface <clé>]
@@ -301,6 +328,7 @@ hillcharts
 hillcharts archive <id>
 hillcharts bookmark <id>
 hillcharts boost <id>
+hillcharts bubble-up <id>
 hillcharts comment <id> <corps html>
 hillcharts copy <id> --to <project_id> [--to <project_id>]
 hillcharts edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -313,6 +341,7 @@ hillcharts subscribe <id>
 hillcharts trash <id>
 hillcharts unbookmark <id>
 hillcharts unboost <id>
+hillcharts unbubble-up <id>
 hillcharts unsubscribe <id>
 hubs
 hubs list
@@ -322,6 +351,7 @@ interventions add <titre> [--project <id>] [--parent <id>] [--happened-on <date>
 interventions archive <id>
 interventions bookmark <id>
 interventions boost <id>
+interventions bubble-up <id>
 interventions comment <id> <corps html>
 interventions copy <id> --to <project_id> [--to <project_id>]
 interventions edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -334,6 +364,7 @@ interventions subscribe <id>
 interventions trash <id>
 interventions unbookmark <id>
 interventions unboost <id>
+interventions unbubble-up <id>
 interventions unsubscribe <id>
 journal <recording_id>
 links
@@ -341,6 +372,7 @@ links add <titre> [--project <id>] [--parent <id>] [--url <url>] [--service <nom
 links archive <id>
 links bookmark <id>
 links boost <id>
+links bubble-up <id>
 links comment <id> <corps html>
 links copy <id> --to <project_id> [--to <project_id>]
 links edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -353,12 +385,14 @@ links subscribe <id>
 links trash <id>
 links unbookmark <id>
 links unboost <id>
+links unbubble-up <id>
 links unsubscribe <id>
 markers
 markers add <titre> [--project <id>] [--parent <id>] [--x <0..1>] [--y <0..1>] [--species-name <nom>] [--palette-item-id <id>]
 markers archive <id>
 markers bookmark <id>
 markers boost <id>
+markers bubble-up <id>
 markers comment <id> <corps html>
 markers copy <id> --to <project_id> [--to <project_id>]
 markers edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -371,12 +405,14 @@ markers subscribe <id>
 markers trash <id>
 markers unbookmark <id>
 markers unboost <id>
+markers unbubble-up <id>
 markers unsubscribe <id>
 me
 messageboards
 messageboards archive <id>
 messageboards bookmark <id>
 messageboards boost <id>
+messageboards bubble-up <id>
 messageboards comment <id> <corps html>
 messageboards copy <id> --to <project_id> [--to <project_id>]
 messageboards edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -389,12 +425,14 @@ messageboards subscribe <id>
 messageboards trash <id>
 messageboards unbookmark <id>
 messageboards unboost <id>
+messageboards unbubble-up <id>
 messageboards unsubscribe <id>
 messages
 messages add <titre> [--project <id>] [--parent <id>] [--body <html>] [--category <clé>]
 messages archive <id>
 messages bookmark <id>
 messages boost <id>
+messages bubble-up <id>
 messages comment <id> <corps html>
 messages copy <id> --to <project_id> [--to <project_id>]
 messages edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -407,9 +445,11 @@ messages subscribe <id>
 messages trash <id>
 messages unbookmark <id>
 messages unboost <id>
+messages unbubble-up <id>
 messages unsubscribe <id>
 my
 my bookmarks
+my bubble-ups
 my notifications
 my timesheets
 my todos
@@ -424,6 +464,8 @@ notifications
 notifications list [--unread]
 notifications read <id> [--unread]
 notifications read-all
+notifications silence
+notifications unsilence
 nurserio
 nurserio containers
 nurserio containers list
@@ -447,6 +489,7 @@ palette-items add <titre> [--project <id>] [--parent <id>] [--name <latin>] [--c
 palette-items archive <id>
 palette-items bookmark <id>
 palette-items boost <id>
+palette-items bubble-up <id>
 palette-items comment <id> <corps html>
 palette-items copy <id> --to <project_id> [--to <project_id>]
 palette-items edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -459,11 +502,13 @@ palette-items subscribe <id>
 palette-items trash <id>
 palette-items unbookmark <id>
 palette-items unboost <id>
+palette-items unbubble-up <id>
 palette-items unsubscribe <id>
 palettes
 palettes archive <id>
 palettes bookmark <id>
 palettes boost <id>
+palettes bubble-up <id>
 palettes comment <id> <corps html>
 palettes copy <id> --to <project_id> [--to <project_id>]
 palettes edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -476,12 +521,14 @@ palettes subscribe <id>
 palettes trash <id>
 palettes unbookmark <id>
 palettes unboost <id>
+palettes unbubble-up <id>
 palettes unsubscribe <id>
 participant-categories
 participant-categories add <titre> [--project <id>] [--parent <id>] [--label <libellé>] [--price-cents <n>] [--quota <n>]
 participant-categories archive <id>
 participant-categories bookmark <id>
 participant-categories boost <id>
+participant-categories bubble-up <id>
 participant-categories comment <id> <corps html>
 participant-categories copy <id> --to <project_id> [--to <project_id>]
 participant-categories edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -494,11 +541,13 @@ participant-categories subscribe <id>
 participant-categories trash <id>
 participant-categories unbookmark <id>
 participant-categories unboost <id>
+participant-categories unbubble-up <id>
 participant-categories unsubscribe <id>
 participant-lists
 participant-lists archive <id>
 participant-lists bookmark <id>
 participant-lists boost <id>
+participant-lists bubble-up <id>
 participant-lists comment <id> <corps html>
 participant-lists copy <id> --to <project_id> [--to <project_id>]
 participant-lists edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -511,12 +560,14 @@ participant-lists subscribe <id>
 participant-lists trash <id>
 participant-lists unbookmark <id>
 participant-lists unboost <id>
+participant-lists unbubble-up <id>
 participant-lists unsubscribe <id>
 participants
 participants add <titre> [--project <id>] [--parent <id>] [--contact-id <id>] [--participant-category-id <id>] [--status <statut>]
 participants archive <id>
 participants bookmark <id>
 participants boost <id>
+participants bubble-up <id>
 participants comment <id> <corps html>
 participants copy <id> --to <project_id> [--to <project_id>]
 participants edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -529,6 +580,7 @@ participants subscribe <id>
 participants trash <id>
 participants unbookmark <id>
 participants unboost <id>
+participants unbubble-up <id>
 participants unsubscribe <id>
 payments
 payments add [--participant <id>] [--amount-cents <n>] [--kind <genre>] [--reference <réf>]
@@ -552,6 +604,7 @@ plant-records add <titre> [--project <id>] [--parent <id>] [--status <statut>] [
 plant-records archive <id>
 plant-records bookmark <id>
 plant-records boost <id>
+plant-records bubble-up <id>
 plant-records comment <id> <corps html>
 plant-records copy <id> --to <project_id> [--to <project_id>]
 plant-records edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -564,6 +617,7 @@ plant-records subscribe <id>
 plant-records trash <id>
 plant-records unbookmark <id>
 plant-records unboost <id>
+plant-records unbubble-up <id>
 plant-records unsubscribe <id>
 planto
 planto genera
@@ -593,6 +647,7 @@ questions add <titre> [--project <id>] [--parent <id>] [--frequency <règle>]
 questions archive <id>
 questions bookmark <id>
 questions boost <id>
+questions bubble-up <id>
 questions comment <id> <corps html>
 questions copy <id> --to <project_id> [--to <project_id>]
 questions edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -605,6 +660,7 @@ questions subscribe <id>
 questions trash <id>
 questions unbookmark <id>
 questions unboost <id>
+questions unbubble-up <id>
 questions unsubscribe <id>
 quick-start
 quote-lines
@@ -612,6 +668,7 @@ quote-lines add <titre> [--project <id>] [--parent <id>] [--description <texte>]
 quote-lines archive <id>
 quote-lines bookmark <id>
 quote-lines boost <id>
+quote-lines bubble-up <id>
 quote-lines comment <id> <corps html>
 quote-lines copy <id> --to <project_id> [--to <project_id>]
 quote-lines edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -624,12 +681,14 @@ quote-lines subscribe <id>
 quote-lines trash <id>
 quote-lines unbookmark <id>
 quote-lines unboost <id>
+quote-lines unbubble-up <id>
 quote-lines unsubscribe <id>
 quotes
 quotes add <titre> [--project <id>] [--parent <id>] [--vat-rate <taux>] [--valid-until <date>]
 quotes archive <id>
 quotes bookmark <id>
 quotes boost <id>
+quotes bubble-up <id>
 quotes comment <id> <corps html>
 quotes copy <id> --to <project_id> [--to <project_id>]
 quotes edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -642,11 +701,13 @@ quotes subscribe <id>
 quotes trash <id>
 quotes unbookmark <id>
 quotes unboost <id>
+quotes unbubble-up <id>
 quotes unsubscribe <id>
 recordings
 recordings archive <id>
 recordings bookmark <id>
 recordings boost <id>
+recordings bubble-up <id>
 recordings comment <id> <corps html>
 recordings copy <id> --to <project_id> [--to <project_id>]
 recordings list [--type <Type>] [--assigned-to <user_id>]
@@ -658,11 +719,19 @@ recordings subscribe <id>
 recordings trash <id>
 recordings unbookmark <id>
 recordings unboost <id>
+recordings unbubble-up <id>
 recordings unsubscribe <id>
+reports
+reports assignments [--person <<user_id>>]
+reports overdue
+reports throughput [--days <<n>>] [--kind <<genre>>]
+reports unassigned
+reports upcoming [--within-days <<n>>]
 schedules
 schedules archive <id>
 schedules bookmark <id>
 schedules boost <id>
+schedules bubble-up <id>
 schedules comment <id> <corps html>
 schedules copy <id> --to <project_id> [--to <project_id>]
 schedules edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -675,6 +744,7 @@ schedules subscribe <id>
 schedules trash <id>
 schedules unbookmark <id>
 schedules unboost <id>
+schedules unbubble-up <id>
 schedules unsubscribe <id>
 search <termes…> [--type <Type>]
 session-feedbacks
@@ -682,6 +752,7 @@ session-feedbacks add <titre> [--project <id>] [--parent <id>] [--schedule-entry
 session-feedbacks archive <id>
 session-feedbacks bookmark <id>
 session-feedbacks boost <id>
+session-feedbacks bubble-up <id>
 session-feedbacks comment <id> <corps html>
 session-feedbacks copy <id> --to <project_id> [--to <project_id>]
 session-feedbacks edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -694,6 +765,7 @@ session-feedbacks subscribe <id>
 session-feedbacks trash <id>
 session-feedbacks unbookmark <id>
 session-feedbacks unboost <id>
+session-feedbacks unbubble-up <id>
 session-feedbacks unsubscribe <id>
 setup <claude|codex>
 skill
@@ -706,6 +778,7 @@ timesheets add <titre> [--project <id>] [--parent <id>] [--worked-on <date>] [--
 timesheets archive <id>
 timesheets bookmark <id>
 timesheets boost <id>
+timesheets bubble-up <id>
 timesheets comment <id> <corps html>
 timesheets copy <id> --to <project_id> [--to <project_id>]
 timesheets edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -718,12 +791,14 @@ timesheets subscribe <id>
 timesheets trash <id>
 timesheets unbookmark <id>
 timesheets unboost <id>
+timesheets unbubble-up <id>
 timesheets unsubscribe <id>
 todogroups
 todogroups add <titre> [--project <id>] [--parent <id>]
 todogroups archive <id>
 todogroups bookmark <id>
 todogroups boost <id>
+todogroups bubble-up <id>
 todogroups comment <id> <corps html>
 todogroups copy <id> --to <project_id> [--to <project_id>]
 todogroups edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -736,12 +811,14 @@ todogroups subscribe <id>
 todogroups trash <id>
 todogroups unbookmark <id>
 todogroups unboost <id>
+todogroups unbubble-up <id>
 todogroups unsubscribe <id>
 todolists
 todolists add <titre> [--project <id>] [--parent <id>] [--description <texte>]
 todolists archive <id>
 todolists bookmark <id>
 todolists boost <id>
+todolists bubble-up <id>
 todolists comment <id> <corps html>
 todolists copy <id> --to <project_id> [--to <project_id>]
 todolists edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -754,6 +831,7 @@ todolists subscribe <id>
 todolists trash <id>
 todolists unbookmark <id>
 todolists unboost <id>
+todolists unbubble-up <id>
 todolists unsubscribe <id>
 todos
 todos add <titre> [--project <id>] [--parent <id>] [--due-on <date>] [--starts-on <date>] [--recurrence <règle>] [--recurrence-until <date>]
@@ -761,6 +839,7 @@ todos archive <id>
 todos assign <id> <user_id…>
 todos bookmark <id>
 todos boost <id>
+todos bubble-up <id>
 todos comment <id> <corps html>
 todos copy <id> --to <project_id> [--to <project_id>]
 todos edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -773,11 +852,13 @@ todos subscribe <id>
 todos trash <id>
 todos unbookmark <id>
 todos unboost <id>
+todos unbubble-up <id>
 todos unsubscribe <id>
 todosets
 todosets archive <id>
 todosets bookmark <id>
 todosets boost <id>
+todosets bubble-up <id>
 todosets comment <id> <corps html>
 todosets copy <id> --to <project_id> [--to <project_id>]
 todosets edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -790,12 +871,14 @@ todosets subscribe <id>
 todosets trash <id>
 todosets unbookmark <id>
 todosets unboost <id>
+todosets unbubble-up <id>
 todosets unsubscribe <id>
 training-documents
 training-documents add <titre> [--project <id>] [--parent <id>] [--name <nom>] [--schedule-entry-id <id>]
 training-documents archive <id>
 training-documents bookmark <id>
 training-documents boost <id>
+training-documents bubble-up <id>
 training-documents comment <id> <corps html>
 training-documents copy <id> --to <project_id> [--to <project_id>]
 training-documents edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -808,6 +891,7 @@ training-documents subscribe <id>
 training-documents trash <id>
 training-documents unbookmark <id>
 training-documents unboost <id>
+training-documents unbubble-up <id>
 training-documents unsubscribe <id>
 upgrade
 uploads
@@ -815,6 +899,7 @@ uploads add <titre> [--project <id>] [--parent <id>] [--file <chemin>] [--captio
 uploads archive <id>
 uploads bookmark <id>
 uploads boost <id>
+uploads bubble-up <id>
 uploads comment <id> <corps html>
 uploads copy <id> --to <project_id> [--to <project_id>]
 uploads edit <id> [--title <titre>] [--body <html>] [--due-on <date>] [--completed <bool>]
@@ -827,6 +912,7 @@ uploads subscribe <id>
 uploads trash <id>
 uploads unbookmark <id>
 uploads unboost <id>
+uploads unbubble-up <id>
 uploads unsubscribe <id>
 url <url>
 version

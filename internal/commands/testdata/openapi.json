@@ -1,1 +1,2060 @@
-{"openapi":"3.1.0","info":{"title":"Terranova API","version":"v1"},"servers":[{"url":"/api/v1"}],"paths":{"/health":{"get":{"summary":"Health check","security":[]}},"/me":{"get":{"summary":"Identity of the token bearer: hubs and role per hub, interface grants, and the token's effective scopes (carried ∩ bearer's real rights)."}},"/recordings":{"get":{"summary":"List recordings (filter by type, project_id, assigned_to)","parameters":[{"name":"type","in":"query","schema":{"type":"string","enum":["MessageBoard","Message","Comment","Todoset","Todolist","TodoGroup","Todo","CardTable","CardColumn","Card","Vault","Document","Upload","CloudLink","Schedule","ScheduleEntry","SessionFeedback","Questionnaire","Question","Answer","Campfire","Inbox","InboxForward","ParticipantList","ParticipantCategory","TrainingPack","Participant","TrainingDocument","Palette","PaletteItem","Concept","Patch","PatchItem","CanvasFeature","PlantMarker","PhaseTransition","Annotation","DesignVersion","SiteAnalysis","MethodologyItem","Interview","ObservationNote","SoilSample","Quote","QuoteLine","PlantRecord","Intervention","FollowUpVisit","Timesheet","Contact","HillChartSnapshot"]}},{"name":"project_id","in":"query","schema":{"type":"integer"}},{"name":"assigned_to","in":"query","schema":{"type":"integer"},"description":"User id — restricts to Todo recordings assigned to that user. Combined with a `type` other than Todo, the request is contradictory and returns 422 (assigned_to_todo_only)."},{"name":"offset","in":"query","schema":{"type":"integer"},"description":"Pagination: skip that many recordings (newest first). Pages are 100 long — iterate offset += 100 until a page comes back shorter than 100."}]},"post":{"summary":"Create a recording of any recordable type","parameters":[{"name":"completion_watcher_ids","in":"query","schema":{"type":"array","items":{"type":"integer"}},"description":"Todo only — users notified every time the to-do is completed. Silently bounded to the project members."},{"name":"recurrence","in":"query","schema":{"type":"string","enum":["none","daily","weekday","weekly","biweekly","monthly_by_weekday","monthly","yearly","weekly_custom","monthly_custom"]},"description":"Todo only — makes the to-do a recurring SERIES and creates its first instance. Ignored without a due_on (the anchor). Pair with recurrence_until / recurrence_config."}],"requestBody":{"description":"Upload only — the file itself, sent as multipart/form-data alongside the query parameters. Required for type=Upload (422 file_required otherwise); ignored for every other type. Without a title, the recording is named after the uploaded filename. Set parent_id to a Vault to file it there, or to a Document to attach it inside that document.","content":{"multipart/form-data":{"schema":{"type":"object","properties":{"file":{"type":"string","format":"binary"}},"required":["file"]}}}}}},"/recordings/{id}":{"get":{"summary":"Show a recording"},"patch":{"summary":"Update a recording (title, body, due_on) and complete/reopen a Todo","parameters":[{"name":"title","in":"query","schema":{"type":"string"}},{"name":"body","in":"query","schema":{"type":"string"},"description":"Rich-text body, when the recordable has one"},{"name":"due_on","in":"query","schema":{"type":"string","format":"date","nullable":true},"description":"Todo and Card; send an empty value to clear it"},{"name":"completed","in":"query","schema":{"type":"boolean"},"description":"Todo only — goes through the model's completion mechanics (records the activity event and the completer). On any other recordable type: 422 (completed_todo_only)."},{"name":"completion_watcher_ids","in":"query","schema":{"type":"array","items":{"type":"integer"}},"description":"Todo only — REPLACES the list of users notified on completion (send an empty array to clear it). Silently bounded to the project members."},{"name":"recurrence","in":"query","schema":{"type":"string","enum":["none","daily","weekday","weekly","biweekly","monthly_by_weekday","monthly","yearly","weekly_custom","monthly_custom"]},"description":"Todo only — sets or changes the recurrence rule (future unfinished instances are regenerated). Send \"none\" to stop the series: future unfinished instances are trashed and the to-do becomes standalone. Refused implicitly on an instance (the schedule belongs to the series)."}]},"delete":{"summary":"Trash a recording"}},"/recordings/{id}/comments":{"post":{"summary":"Comment the recording (body: HTML)"}},"/recordings/{id}/boost":{"post":{"summary":"Boost (short reaction; content defaults to 🙌)"},"delete":{"summary":"Remove YOUR boost only"}},"/recordings/{id}/subscription":{"post":{"summary":"Subscribe to notifications"},"delete":{"summary":"Unsubscribe"}},"/recordings/{id}/read":{"post":{"summary":"Mark read"}},"/recordings/{id}/bookmark":{"post":{"summary":"Bookmark (idempotent)"},"delete":{"summary":"Remove YOUR bookmark"}},"/recordings/{id}/archive":{"post":{"summary":"Archive (with children)"}},"/recordings/{id}/restore":{"post":{"summary":"Restore from archive or trash"}},"/recordings/{id}/assignees":{"patch":{"summary":"REPLACE assignees (todo/card; project members only)"}},"/recordings/{id}/column":{"patch":{"summary":"Move a card to a column (done column timestamps completion)"}},"/recordings/{id}/move":{"patch":{"summary":"Move to another project (same tool, children follow)"}},"/recordings/{id}/copy":{"post":{"summary":"Copy to another project"}},"/recordings/{recording_id}/lines":{"get":{"summary":"Chat lines of a Campfire recording (newest first, pages of 100, offset)"},"post":{"summary":"Post a chat line (body: text). Authored by the token bearer."}},"/recordings/{recording_id}/lines/{id}":{"patch":{"summary":"Edit YOUR OWN line only"},"delete":{"summary":"Delete YOUR OWN line only"}},"/activity":{"get":{"summary":"Activity feed, same access rule as the screen (filter: project_id, offset)"}},"/everything":{"get":{"summary":"The whole spine at a glance: counts by type + 20 most recent"}},"/recordings/{recording_id}/events":{"get":{"summary":"Change journal of one recording (who did what, when)"}},"/search":{"get":{"summary":"Global search (accent-insensitive), scoped to what the bearer can see.","parameters":[{"name":"q","in":"query","required":true,"schema":{"type":"string"}},{"name":"type","in":"query","schema":{"type":"string","enum":["MessageBoard","Message","Comment","Todoset","Todolist","TodoGroup","Todo","CardTable","CardColumn","Card","Vault","Document","Upload","CloudLink","Schedule","ScheduleEntry","SessionFeedback","Questionnaire","Question","Answer","Campfire","Inbox","InboxForward","ParticipantList","ParticipantCategory","TrainingPack","Participant","TrainingDocument","Palette","PaletteItem","Concept","Patch","PatchItem","CanvasFeature","PlantMarker","PhaseTransition","Annotation","DesignVersion","SiteAnalysis","MethodologyItem","Interview","ObservationNote","SoilSample","Quote","QuoteLine","PlantRecord","Intervention","FollowUpVisit","Timesheet","Contact","HillChartSnapshot"]}},{"name":"project_id","in":"query","schema":{"type":"integer"}},{"name":"offset","in":"query","schema":{"type":"integer"}}]}},"/notifications":{"get":{"summary":"The bearer's notifications in the current hub (newest first).","parameters":[{"name":"unread","in":"query","schema":{"type":"string","enum":["1"]}},{"name":"offset","in":"query","schema":{"type":"integer"}}]}},"/notifications/{id}/read":{"post":{"summary":"Mark read (read=0 to mark unread). Own notifications only."}},"/notifications/read_all":{"post":{"summary":"Mark all unread notifications read (current hub)"}},"/projects/{project_id}/people":{"get":{"summary":"Project members (people) and the project's access mode"},"post":{"summary":"Add a hub member to the project (user_id)"}},"/projects/{project_id}/people/{id}":{"delete":{"summary":"Remove a member from the project"}},"/my/timesheets":{"get":{"summary":"The bearer's timesheets (time-tracking-enabled projects only) + total hours"}},"/my/bookmarks":{"get":{"summary":"The bearer's bookmarked recordings, in bookmark order"}},"/asbl/fees":{"get":{"summary":"Membership fees (filters: status pending|paid, member_enrollment_id)"}},"/asbl/fees/{id}/mark_paid":{"post":{"summary":"Mark a fee paid via MembershipFee#mark_paid! (the webhook's gesture)"}},"/asbl/rates":{"get":{"summary":"Fee rates by membership type and validity period"}},"/asbl/assemblies":{"get":{"summary":"General assemblies of the hub"}},"/asbl/effectif_requests":{"get":{"summary":"Requests to become effectif (filter: status)"}},"/academio/activities":{"get":{"summary":"Academy activities: type, location, registered count (same definition as reporting)"}},"/academio/activities/{id}":{"get":{"summary":"Activity with its sessions (ScheduleEntry recordings)"}},"/academio/attendances":{"get":{"summary":"Attendance sheet (filters: schedule_entry_id, participant_id)"},"post":{"summary":"Set attendance: participant_id + schedule_entry_id (+ present, default true). Idempotent upsert."}},"/academio/attendances/{id}":{"delete":{"summary":"Remove an attendance row"}},"/academio/registration_packs":{"get":{"summary":"Packs bought by participants (filter: participant_id)"},"post":{"summary":"Add a pack to a registration (price defaults from the pack)"}},"/academio/registration_packs/{id}":{"delete":{"summary":"Remove a pack from a registration"}},"/academio/types":{"get":{"summary":"Training types of the hub"}},"/academio/locations":{"get":{"summary":"Training locations of the hub"}},"/payments":{"get":{"summary":"Payments of the hub (filters: status, participant_id)"},"post":{"summary":"Record a payment (participant_id, amount_cents, kind deposit|balance|full) as pending"}},"/payments/{id}":{"get":{"summary":"Show a payment"}},"/payments/{id}/mark_paid":{"post":{"summary":"Mark paid via Payment#mark_paid! — the same gesture as the Stripe webhook"}},"/payments/outstanding":{"get":{"summary":"Who has not settled: expected vs paid per participant (filter: participant_list_id)"}},"/payments/plans":{"get":{"summary":"Payment plans with their installments and outstanding (filter: participant_id)"}},"/pings":{"get":{"summary":"MY active ping conversations (hub-scoped)"},"post":{"summary":"Ping an exact set of people (user_ids[] + body) — idempotent find-or-create of the conversation"}},"/pings/{id}":{"get":{"summary":"A conversation and its messages (newest first, offset)"}},"/pings/{id}/messages":{"post":{"summary":"Reply in the conversation (body)"}},"/pings/{id}/archive":{"post":{"summary":"Archive (irreversible — re-pinging starts a fresh conversation)"}},"/nurserio/orders":{"get":{"summary":"Nursery orders of the hub (filter: status; newest first)"},"post":{"summary":"Create an order: lines[][stock_batch_id, quantity] (+ member_id or customer_* fields)"}},"/nurserio/orders/{id}":{"get":{"summary":"Order with its lines (reserved quantities included)"}},"/nurserio/orders/{id}/process":{"post":{"summary":"new → processing: reserves stock; NON-SILENT partial reservation (unservable_lines in the response)"}},"/nurserio/orders/{id}/ready":{"post":{"summary":"processing → ready (customer notified)"}},"/nurserio/orders/{id}/pickup":{"post":{"summary":"ready → picked_up (reservations consumed)"}},"/nurserio/orders/{id}/cancel":{"post":{"summary":"new/processing → cancelled (reservations released)"}},"/projects":{"get":{"summary":"List the projects of the current hub (filter by q on the name, status)","parameters":[{"name":"q","in":"query","schema":{"type":"string"},"description":"Case-insensitive match on the project name"},{"name":"status","in":"query","schema":{"type":"string","enum":["active","archived","trashed"]}}]},"post":{"summary":"Create a project — installs the default toolkit (same as the UI picker) unless `tools[]` restricts it","parameters":[{"name":"name","in":"query","required":true,"schema":{"type":"string"}},{"name":"description","in":"query","schema":{"type":"string"}},{"name":"kind","in":"query","schema":{"type":"string","enum":["design","academy","circle","hq"],"default":"circle"}},{"name":"tools","in":"query","schema":{"type":"array","items":{"type":"string","enum":["message_board","todoset","card_table","vault","schedule","campfire"]}},"description":"Omit to install the default toolkit (message_board, todoset, card_table, vault, schedule, campfire)"},{"name":"design_phase","in":"query","schema":{"type":"string","enum":["reception","offer","pre_design","detailed_design","implementation","completed"]},"description":"kind=design only — the design's current phase. Defaults to reception. An unknown value returns 422."},{"name":"design_project_type","in":"query","schema":{"type":"string","enum":["prive","professionnel","collectif","public"]},"description":"kind=design only — who the design is for. Optional."},{"name":"design_kind","in":"query","schema":{"type":"string","enum":["client","interne"]},"description":"kind=design only — client work or internal. Optional."}]}},"/projects/{project_id}/tools":{"post":{"summary":"Install a tool on an existing project (idempotent — re-installing returns the existing tool with 200)","parameters":[{"name":"kind","in":"query","required":true,"schema":{"type":"string","enum":["message_board","todoset","vault","card_table","campfire","schedule","reporting","external_link"]},"description":"An uninstallable kind (questionnaire, participant_list, palette, plan, inbox) returns 422 tool_not_installable."},{"name":"name","in":"query","schema":{"type":"string"},"description":"Defaults to the hub's name for that tool"},{"name":"url","in":"query","schema":{"type":"string"},"description":"Required for external_link (422 url_required otherwise)"}]}},"/projects/{id}":{"get":{"summary":"Show a project of the current hub with its installed tools"},"patch":{"summary":"Update name, description, color, status (archivable statuses only)"}},"/interface_grants":{"get":{"summary":"List interface grants governed by the current hub (admin)"},"post":{"summary":"Grant a constellation interface to a user (admin)"}},"/interface_grants/{id}":{"delete":{"summary":"Revoke an interface grant (admin)"}},"/members":{"get":{"summary":"List global members"},"post":{"summary":"Create a global member (admin)"}},"/members/{id}":{"get":{"summary":"Show a global member"}},"/member_enrollments":{"get":{"summary":"List member enrollments of the current hub (admin)"},"post":{"summary":"Enroll a member in the current hub (admin)"}},"/member_enrollments/{id}":{"delete":{"summary":"Remove a member enrollment (admin)"}},"/hubs":{"get":{"summary":"List hubs with aggregate stats (superadmin, network scope)"},"post":{"summary":"Provision a new hub — HQ project, default poles, initial admin (superadmin)"}},"/hubs/{id}":{"get":{"summary":"Show a hub with aggregate stats (superadmin)"},"put":{"summary":"Update a hub's identity/config (superadmin)"},"delete":{"summary":"Delete a hub (superadmin)"}},"/plant/genera":{"get":{"summary":"List botanical genera (global Planto catalog)"},"post":{"summary":"Create a genus (requires the planto scope)"}},"/plant/genera/{id}":{"get":{"summary":"Show a genus with its species ids"},"patch":{"summary":"Update a genus (requires the planto scope)"}},"/plant/species":{"get":{"summary":"List species (filter by genus_id, q)"},"post":{"summary":"Create a species (planto scope; multipart `silhouette_illustration` attaches the botanical illustration)"}},"/plant/species/{id}":{"get":{"summary":"Show a species with its rich botanical fields"},"patch":{"summary":"Update a species (planto scope; multipart `silhouette_illustration` attaches or replaces the illustration)"}},"/plant/varieties":{"get":{"summary":"List varieties (filter by species_id)"},"post":{"summary":"Create a variety (requires the planto scope)"}},"/plant/varieties/{id}":{"get":{"summary":"Show a variety"},"patch":{"summary":"Update a variety (requires the planto scope)"}},"/nurserio/stock_batches":{"get":{"summary":"List stock batches of the current hub (filter by site_id, species_id, variety_id, in_stock, limit)"},"post":{"summary":"Create a stock batch (reserved_quantity is refused — driven by orders)"}},"/nurserio/stock_batches/{id}":{"get":{"summary":"Show a stock batch (species/variety, container, site, quantities, stage, price)"},"patch":{"summary":"Update a stock batch (quantities, price, stage — reserved_quantity is refused)"}},"/nurserio/sites":{"get":{"summary":"List the hub's nursery sites / pickup points (read-only reference)"}},"/nurserio/containers":{"get":{"summary":"List the hub's production containers (read-only reference)"}},"/administratio/expenses":{"get":{"summary":"List expenses of the current hub (filter by status, from, to, external_ref, limit)"},"post":{"summary":"Create an expense (multipart `document` attaches the receipt; VAT/total are computed server-side)"}},"/administratio/expenses/{id}":{"get":{"summary":"Show an expense of the current hub"},"patch":{"summary":"Update an expense (multipart `document` attaches or replaces the receipt)"}},"/administratio/revenues":{"get":{"summary":"List revenues of the current hub (filter by status, q, from, to, limit)"},"post":{"summary":"Create a revenue (cents amounts; multi-rate via lines_attributes; VAT/total computed server-side)"}},"/administratio/revenues/{id}":{"get":{"summary":"Show a revenue of the current hub"},"patch":{"summary":"Update a revenue (lines_attributes with _destroy to edit multi-rate lines)"}},"/administratio/structures":{"get":{"summary":"List the hub's legal structures (name, VAT regime, default) — structure_id for pieces"}},"/administratio/transactions":{"get":{"summary":"List ledger transactions (filter by status, cash_account_id, q, from, to, limit)"}},"/administratio/transactions/{id}":{"get":{"summary":"Show a ledger transaction"}},"/administratio/transactions/{id}/reconcile":{"post":{"summary":"Reconcile with a document (document_type: Expense|Revenue, document_id) — marks the piece paid/received"},"delete":{"summary":"Undo the reconciliation"}},"/administratio/transactions/{id}/ignore":{"post":{"summary":"Set aside a movement with no piece (bank fees, internal transfer…)"}},"/administratio/transactions/{id}/restore":{"post":{"summary":"Put an ignored movement back in the queue"}},"/administratio/mileage_claims":{"get":{"summary":"List mileage claims of the current hub (filter by status, limit)"}},"/administratio/mileage_claims/{id}":{"get":{"summary":"Show a mileage claim of the current hub"}}},"components":{"schemas":{"Recording":{"type":"object","properties":{"id":{"type":"integer"},"recordable_type":{"type":"string","enum":["MessageBoard","Message","Comment","Todoset","Todolist","TodoGroup","Todo","CardTable","CardColumn","Card","Vault","Document","Upload","CloudLink","Schedule","ScheduleEntry","SessionFeedback","Questionnaire","Question","Answer","Campfire","Inbox","InboxForward","ParticipantList","ParticipantCategory","TrainingPack","Participant","TrainingDocument","Palette","PaletteItem","Concept","Patch","PatchItem","CanvasFeature","PlantMarker","PhaseTransition","Annotation","DesignVersion","SiteAnalysis","MethodologyItem","Interview","ObservationNote","SoilSample","Quote","QuoteLine","PlantRecord","Intervention","FollowUpVisit","Timesheet","Contact","HillChartSnapshot"]},"title":{"type":"string","nullable":true},"status":{"type":"string","enum":["active","archived","trashed"]},"body":{"type":"string","nullable":true,"description":"Rich-text body as stored HTML. Only on recordables that have one (Document, Message, Comment, Note, Answer, InboxForward, Draft)."},"bucket_id":{"type":"integer"},"parent_id":{"type":"integer","nullable":true},"todo":{"type":"object","description":"Only on Todo recordings.","properties":{"due_on":{"type":"string","format":"date","nullable":true},"starts_on":{"type":"string","format":"date","nullable":true},"completed":{"type":"boolean"},"completed_at":{"type":"string","format":"date-time","nullable":true},"assignees":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}},"completion_watcher_ids":{"type":"array","items":{"type":"integer"}},"recurrence":{"type":"string","enum":["none","daily","weekday","weekly","biweekly","monthly_by_weekday","monthly","yearly","weekly_custom","monthly_custom"]},"recurrence_config":{"type":"object"},"recurrence_until":{"type":"string","format":"date","nullable":true},"recurrence_role":{"type":"string","enum":["standalone","series","instance"]},"series_id":{"type":"integer","nullable":true}}}}},"Project":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"description":{"type":"string","description":"Plain text rendering of the rich-text description"},"kind":{"type":"string","enum":["design","academy","circle","hq"]},"status":{"type":"string","enum":["active","archived","trashed"]},"access":{"type":"string","enum":["invite_only","all_access"]},"folder_id":{"type":"integer","nullable":true},"pole_id":{"type":"integer","nullable":true},"creator_id":{"type":"integer"},"tools":{"type":"array","description":"Installed tools; `root_recording_id` is the parent to compose recordings under.","items":{"type":"object","properties":{"id":{"type":"integer"},"kind":{"type":"string"},"name":{"type":"string","nullable":true},"root_recording_id":{"type":"integer","nullable":true}}}}}},"InterfaceGrant":{"type":"object","properties":{"id":{"type":"integer"},"user_id":{"type":"integer"},"interface":{"type":"string","enum":["administratio","contacto","conceptio","academio","in_situ","nurserio","planto"]},"hub_id":{"type":"integer","nullable":true},"granted_by_id":{"type":"integer","nullable":true},"source_hub_id":{"type":"integer","nullable":true}}},"Member":{"type":"object","properties":{"id":{"type":"integer"},"email":{"type":"string"},"name":{"type":"string","nullable":true},"locale":{"type":"string"}}},"MemberEnrollment":{"type":"object","properties":{"id":{"type":"integer"},"member_id":{"type":"integer"},"hub_id":{"type":"integer"},"structure_id":{"type":"integer","description":"Legal structure the member belongs to"},"status":{"type":"string","enum":["active","inactive"]}}},"Hub":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"slug":{"type":"string"},"default_locale":{"type":"string"},"country":{"type":"string","nullable":true},"currency":{"type":"string"},"stats":{"$ref":"#/components/schemas/HubStats"}}},"HubStats":{"type":"object","description":"Aggregate network stats only — never hub content (ISC-241).","properties":{"active_members":{"type":"integer"},"active_projects":{"type":"integer"},"recordings_last_30d":{"type":"integer"},"nova_tokens":{"type":"integer"},"storage_bytes":{"type":"integer"}}},"Plant::Genus":{"type":"object","properties":{"id":{"type":"integer"},"latin_name":{"type":"string"},"common_name":{"type":"string"},"description":{"type":"string"},"wikipedia_url":{"type":"string"},"species_ids":{"type":"array","items":{"type":"integer"}}}},"Plant::Species":{"type":"object","properties":{"id":{"type":"integer"},"genus_id":{"type":"integer","nullable":true},"latin_name":{"type":"string"},"common_names_fr":{"type":"string"},"plant_type":{"type":"string","enum":["tree","shrub","small-shrub","climber","herbaceous","ground-cover"]},"strate":{"type":"string","nullable":true},"edible_rating":{"type":"integer","nullable":true},"medicinal_rating":{"type":"integer","nullable":true},"hardiness":{"type":"string"},"variety_ids":{"type":"array","items":{"type":"integer"}},"silhouette_illustration_attached":{"type":"boolean","readOnly":true},"silhouette_illustration_url":{"type":"string","nullable":true,"readOnly":true}}},"Plant::Variety":{"type":"object","properties":{"id":{"type":"integer"},"species_id":{"type":"integer","nullable":true},"latin_name":{"type":"string"},"common_names_fr":{"type":"string"},"taste_rating":{"type":"integer","nullable":true},"maturity":{"type":"string"}}},"Nursery::StockBatch":{"type":"object","properties":{"id":{"type":"integer"},"site_id":{"type":"integer"},"species_id":{"type":"integer"},"variety_id":{"type":"integer","nullable":true},"container_id":{"type":"integer","nullable":true},"quantity":{"type":"integer"},"available_quantity":{"type":"integer"},"reserved_quantity":{"type":"integer","readOnly":true,"description":"Driven by the Nursery::Order state machine — refused on write (422)"},"price_cents":{"type":"integer","nullable":true},"growth_stage":{"type":"string","enum":["seed","seedling","young","established","mature"]},"status":{"type":"string","enum":["available","in_production","sold_out","archived"]},"expected_availability_on":{"type":"string","format":"date","nullable":true},"availability_label":{"type":"string"},"display_name":{"type":"string","readOnly":true},"species_latin_name":{"type":"string","readOnly":true},"variety_latin_name":{"type":"string","nullable":true,"readOnly":true},"container_name":{"type":"string","nullable":true,"readOnly":true},"site_name":{"type":"string","readOnly":true}}},"Nursery::Site":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"nursery_type":{"type":"string","enum":["semisto","partner"]},"integration":{"type":"string","enum":["platform","manual"]},"is_pickup_point":{"type":"boolean"},"city":{"type":"string"},"postal_code":{"type":"string"},"country":{"type":"string"}}},"Nursery::Container":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"short_name":{"type":"string"},"volume_liters":{"type":"number","nullable":true},"display_name":{"type":"string","readOnly":true}}},"Revenue":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"category":{"type":"string"},"status":{"type":"string","enum":["draft","confirmed","received"]},"payment_method":{"type":"string","enum":["bank_card","bank_transfer","cash","other"]},"vat_rate":{"type":"string","description":"Hub-configured rate, exempt/intracom, or multi when lines exist"},"date":{"type":"string","format":"date","nullable":true},"received_at":{"type":"string","format":"date","nullable":true},"amount_excl_vat_cents":{"type":"integer"},"vat_cents":{"type":"integer"},"total_incl_vat_cents":{"type":"integer"},"contribution_cents":{"type":"integer","description":"Part reversée au fonctionnement de l'ASBL"},"contact_id":{"type":"integer","nullable":true},"pole_id":{"type":"integer","nullable":true},"project_id":{"type":"integer","nullable":true},"lines":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"label":{"type":"string"},"amount_excl_vat_cents":{"type":"integer"},"vat_rate":{"type":"string"},"vat_cents":{"type":"integer"}}}},"notes":{"type":"string"}}},"Structure":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"enterprise_number":{"type":"string"},"vat_regime":{"type":"string","enum":["normal","franchise"]},"default":{"type":"boolean"},"position":{"type":"integer"}}},"Transaction":{"type":"object","properties":{"id":{"type":"integer"},"date":{"type":"string","format":"date"},"amount_cents":{"type":"integer","description":"Signed; negative = outgoing"},"currency":{"type":"string"},"counterpart":{"type":"string"},"memo":{"type":"string","description":"Full bank communication (CODA)"},"status":{"type":"string","enum":["unmatched","matched","ignored"]},"source":{"type":"string"},"cash_account_id":{"type":"integer"},"cash_account_name":{"type":"string","nullable":true},"reconciled_document_type":{"type":"string","nullable":true},"reconciled_document_id":{"type":"integer","nullable":true}}},"Expense":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"supplier":{"type":"string"},"supplier_contact_id":{"type":"integer","nullable":true},"expense_type":{"type":"string","enum":["services_and_goods","salaries","merchandise","taxes","financial","exceptional","other"]},"status":{"type":"string","enum":["planned","processing","ready_for_payment","paid"]},"payment_type":{"type":"string","enum":["bank_card","bank_transfer","cash","reimbursement","other"]},"billing_zone":{"type":"string","enum":["belgium","intra_eu","extra_eu"]},"vat_rate":{"type":"string","description":"Rate configured on the hub, or exempt/intracom (ISC-222)"},"invoice_date":{"type":"string","format":"date","nullable":true},"payment_date":{"type":"string","format":"date","nullable":true},"amount_excl_vat_cents":{"type":"integer"},"vat_cents":{"type":"integer","readOnly":true},"total_incl_vat_cents":{"type":"integer","readOnly":true},"pole_id":{"type":"integer","nullable":true},"project_id":{"type":"integer","nullable":true},"external_ref":{"type":"string","description":"Idempotency marker for automated imports (e.g. billit:{OrderID})"},"notes":{"type":"string"},"document_attached":{"type":"boolean","readOnly":true},"document_filename":{"type":"string","nullable":true,"readOnly":true}}},"MileageClaim":{"type":"object","properties":{"id":{"type":"integer"},"reference":{"type":"string","description":"Human identifier KM-n, unique per hub","readOnly":true},"sequence_number":{"type":"integer","readOnly":true},"structure_id":{"type":"integer","description":"Legal structure carrying the claim"},"user_id":{"type":"integer","description":"The requester"},"requester":{"type":"string","readOnly":true},"kilometers":{"type":"integer"},"rate_cents":{"type":"integer","description":"Hub rate copied at submission time"},"amount_cents":{"type":"integer","description":"kilometers × rate_cents","readOnly":true},"period":{"type":"string","description":"Free text, e.g. 01-03/2026"},"journey":{"type":"string","nullable":true},"status":{"type":"string","enum":["submitted","approved","paid","rejected"]},"decision_reason":{"type":"string","nullable":true},"decided_by_id":{"type":"integer","nullable":true},"decided_at":{"type":"string","format":"date-time","nullable":true},"paid_on":{"type":"string","format":"date","nullable":true},"expense_id":{"type":"integer","nullable":true,"description":"Reimbursement expense generated when marked paid"}}}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Terranova API",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "security": []
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Identity of the token bearer: hubs and role per hub, interface grants, and the token's effective scopes (carried ∩ bearer's real rights)."
+      }
+    },
+    "/recordings": {
+      "get": {
+        "summary": "List recordings (filter by type, project_id, assigned_to)",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "MessageBoard",
+                "Message",
+                "Comment",
+                "Todoset",
+                "Todolist",
+                "TodoGroup",
+                "Todo",
+                "CardTable",
+                "CardColumn",
+                "Card",
+                "Vault",
+                "Document",
+                "Upload",
+                "CloudLink",
+                "Schedule",
+                "ScheduleEntry",
+                "SessionFeedback",
+                "Questionnaire",
+                "Question",
+                "Answer",
+                "Campfire",
+                "Inbox",
+                "InboxForward",
+                "ParticipantList",
+                "ParticipantCategory",
+                "TrainingPack",
+                "Participant",
+                "TrainingDocument",
+                "Palette",
+                "PaletteItem",
+                "Concept",
+                "Patch",
+                "PatchItem",
+                "CanvasFeature",
+                "PlantMarker",
+                "PhaseTransition",
+                "Annotation",
+                "DesignVersion",
+                "SiteAnalysis",
+                "MethodologyItem",
+                "Interview",
+                "ObservationNote",
+                "SoilSample",
+                "Quote",
+                "QuoteLine",
+                "PlantRecord",
+                "Intervention",
+                "FollowUpVisit",
+                "Timesheet",
+                "Contact",
+                "HillChartSnapshot"
+              ]
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User id — restricts to Todo recordings assigned to that user. Combined with a `type` other than Todo, the request is contradictory and returns 422 (assigned_to_todo_only)."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Pagination: skip that many recordings (newest first). Pages are 100 long — iterate offset += 100 until a page comes back shorter than 100."
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a recording of any recordable type",
+        "parameters": [
+          {
+            "name": "completion_watcher_ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "Todo only — users notified every time the to-do is completed. Silently bounded to the project members."
+          },
+          {
+            "name": "recurrence",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "none",
+                "daily",
+                "weekday",
+                "weekly",
+                "biweekly",
+                "monthly_by_weekday",
+                "monthly",
+                "yearly",
+                "weekly_custom",
+                "monthly_custom"
+              ]
+            },
+            "description": "Todo only — makes the to-do a recurring SERIES and creates its first instance. Ignored without a due_on (the anchor). Pair with recurrence_until / recurrence_config."
+          }
+        ],
+        "requestBody": {
+          "description": "Upload only — the file itself, sent as multipart/form-data alongside the query parameters. Required for type=Upload (422 file_required otherwise); ignored for every other type. Without a title, the recording is named after the uploaded filename. Set parent_id to a Vault to file it there, or to a Document to attach it inside that document.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recordings/{id}": {
+      "get": {
+        "summary": "Show a recording"
+      },
+      "patch": {
+        "summary": "Update a recording (title, body, due_on) and complete/reopen a Todo",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "body",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rich-text body, when the recordable has one"
+          },
+          {
+            "name": "due_on",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "nullable": true
+            },
+            "description": "Todo and Card; send an empty value to clear it"
+          },
+          {
+            "name": "completed",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Todo only — goes through the model's completion mechanics (records the activity event and the completer). On any other recordable type: 422 (completed_todo_only)."
+          },
+          {
+            "name": "completion_watcher_ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "description": "Todo only — REPLACES the list of users notified on completion (send an empty array to clear it). Silently bounded to the project members."
+          },
+          {
+            "name": "recurrence",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "none",
+                "daily",
+                "weekday",
+                "weekly",
+                "biweekly",
+                "monthly_by_weekday",
+                "monthly",
+                "yearly",
+                "weekly_custom",
+                "monthly_custom"
+              ]
+            },
+            "description": "Todo only — sets or changes the recurrence rule (future unfinished instances are regenerated). Send \"none\" to stop the series: future unfinished instances are trashed and the to-do becomes standalone. Refused implicitly on an instance (the schedule belongs to the series)."
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Trash a recording"
+      }
+    },
+    "/recordings/{id}/comments": {
+      "post": {
+        "summary": "Comment the recording (body: HTML)"
+      }
+    },
+    "/recordings/{id}/boost": {
+      "post": {
+        "summary": "Boost (short reaction; content defaults to 🙌)"
+      },
+      "delete": {
+        "summary": "Remove YOUR boost only"
+      }
+    },
+    "/recordings/{id}/subscription": {
+      "post": {
+        "summary": "Subscribe to notifications"
+      },
+      "delete": {
+        "summary": "Unsubscribe"
+      }
+    },
+    "/recordings/{id}/read": {
+      "post": {
+        "summary": "Mark read"
+      }
+    },
+    "/recordings/{id}/bookmark": {
+      "post": {
+        "summary": "Bookmark (idempotent)"
+      },
+      "delete": {
+        "summary": "Remove YOUR bookmark"
+      }
+    },
+    "/recordings/{id}/archive": {
+      "post": {
+        "summary": "Archive (with children)"
+      }
+    },
+    "/recordings/{id}/restore": {
+      "post": {
+        "summary": "Restore from archive or trash"
+      }
+    },
+    "/recordings/{id}/assignees": {
+      "patch": {
+        "summary": "REPLACE assignees (todo/card; project members only)"
+      }
+    },
+    "/recordings/{id}/column": {
+      "patch": {
+        "summary": "Move a card to a column (done column timestamps completion)"
+      }
+    },
+    "/recordings/{id}/move": {
+      "patch": {
+        "summary": "Move to another project (same tool, children follow)"
+      }
+    },
+    "/recordings/{id}/copy": {
+      "post": {
+        "summary": "Copy to another project"
+      }
+    },
+    "/recordings/{id}/bubble_up": {
+      "post": {
+        "summary": "Bubble up in Hey! (when: now|this_evening|tomorrow|next_week) — idempotent"
+      },
+      "delete": {
+        "summary": "Remove YOUR bubble up"
+      }
+    },
+    "/recordings/{id}/merge": {
+      "post": {
+        "summary": "Merge Contacts: {id} survives, merged_recording_id disappears (irreversible; same hub, same kind)"
+      }
+    },
+    "/recordings/{recording_id}/lines": {
+      "get": {
+        "summary": "Chat lines of a Campfire recording (newest first, pages of 100, offset)"
+      },
+      "post": {
+        "summary": "Post a chat line (body: text). Authored by the token bearer."
+      }
+    },
+    "/recordings/{recording_id}/lines/{id}": {
+      "patch": {
+        "summary": "Edit YOUR OWN line only"
+      },
+      "delete": {
+        "summary": "Delete YOUR OWN line only"
+      }
+    },
+    "/activity": {
+      "get": {
+        "summary": "Activity feed, same access rule as the screen (filter: project_id, offset)"
+      }
+    },
+    "/everything": {
+      "get": {
+        "summary": "The whole spine at a glance: counts by type + 20 most recent"
+      }
+    },
+    "/recordings/{recording_id}/events": {
+      "get": {
+        "summary": "Change journal of one recording (who did what, when)"
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Global search (accent-insensitive), scoped to what the bearer can see.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "MessageBoard",
+                "Message",
+                "Comment",
+                "Todoset",
+                "Todolist",
+                "TodoGroup",
+                "Todo",
+                "CardTable",
+                "CardColumn",
+                "Card",
+                "Vault",
+                "Document",
+                "Upload",
+                "CloudLink",
+                "Schedule",
+                "ScheduleEntry",
+                "SessionFeedback",
+                "Questionnaire",
+                "Question",
+                "Answer",
+                "Campfire",
+                "Inbox",
+                "InboxForward",
+                "ParticipantList",
+                "ParticipantCategory",
+                "TrainingPack",
+                "Participant",
+                "TrainingDocument",
+                "Palette",
+                "PaletteItem",
+                "Concept",
+                "Patch",
+                "PatchItem",
+                "CanvasFeature",
+                "PlantMarker",
+                "PhaseTransition",
+                "Annotation",
+                "DesignVersion",
+                "SiteAnalysis",
+                "MethodologyItem",
+                "Interview",
+                "ObservationNote",
+                "SoilSample",
+                "Quote",
+                "QuoteLine",
+                "PlantRecord",
+                "Intervention",
+                "FollowUpVisit",
+                "Timesheet",
+                "Contact",
+                "HillChartSnapshot"
+              ]
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "The bearer's notifications in the current hub (newest first).",
+        "parameters": [
+          {
+            "name": "unread",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "summary": "Mark read (read=0 to mark unread). Own notifications only."
+      }
+    },
+    "/notifications/read_all": {
+      "post": {
+        "summary": "Mark all unread notifications read (current hub)"
+      }
+    },
+    "/notifications/silence": {
+      "post": {
+        "summary": "Global Shhh: silence the calm-notify pipeline for the bearer"
+      },
+      "delete": {
+        "summary": "Un-silence notifications"
+      }
+    },
+    "/projects/{project_id}/people": {
+      "get": {
+        "summary": "Project members (people) and the project's access mode"
+      },
+      "post": {
+        "summary": "Add a hub member to the project (user_id)"
+      }
+    },
+    "/projects/{project_id}/people/{id}": {
+      "delete": {
+        "summary": "Remove a member from the project"
+      }
+    },
+    "/my/timesheets": {
+      "get": {
+        "summary": "The bearer's timesheets (time-tracking-enabled projects only) + total hours"
+      }
+    },
+    "/my/bookmarks": {
+      "get": {
+        "summary": "The bearer's bookmarked recordings, in bookmark order"
+      }
+    },
+    "/my/bubble_ups": {
+      "get": {
+        "summary": "The bearer's pending bubble ups, soonest first"
+      }
+    },
+    "/reports/upcoming": {
+      "get": {
+        "summary": "Dated open work inside the horizon (within_days, default 14)"
+      }
+    },
+    "/reports/overdue": {
+      "get": {
+        "summary": "Late work grouped by lateness (today, this_week, last_week, older)"
+      }
+    },
+    "/reports/unassigned": {
+      "get": {
+        "summary": "Open work with nobody on it"
+      }
+    },
+    "/reports/assignments": {
+      "get": {
+        "summary": "Someone's open work (person_id, defaults to the bearer)"
+      }
+    },
+    "/reports/throughput": {
+      "get": {
+        "summary": "Added vs completed per day (days 7..365, kind all|todo|card)"
+      }
+    },
+    "/asbl/fees": {
+      "get": {
+        "summary": "Membership fees (filters: status pending|paid, member_enrollment_id)"
+      }
+    },
+    "/asbl/fees/{id}/mark_paid": {
+      "post": {
+        "summary": "Mark a fee paid via MembershipFee#mark_paid! (the webhook's gesture)"
+      }
+    },
+    "/asbl/rates": {
+      "get": {
+        "summary": "Fee rates by membership type and validity period"
+      }
+    },
+    "/asbl/assemblies": {
+      "get": {
+        "summary": "General assemblies of the hub"
+      }
+    },
+    "/asbl/effectif_requests": {
+      "get": {
+        "summary": "Requests to become effectif (filter: status)"
+      }
+    },
+    "/academio/activities": {
+      "get": {
+        "summary": "Academy activities: type, location, registered count (same definition as reporting)"
+      }
+    },
+    "/academio/activities/{id}": {
+      "get": {
+        "summary": "Activity with its sessions (ScheduleEntry recordings)"
+      }
+    },
+    "/academio/attendances": {
+      "get": {
+        "summary": "Attendance sheet (filters: schedule_entry_id, participant_id)"
+      },
+      "post": {
+        "summary": "Set attendance: participant_id + schedule_entry_id (+ present, default true). Idempotent upsert."
+      }
+    },
+    "/academio/attendances/{id}": {
+      "delete": {
+        "summary": "Remove an attendance row"
+      }
+    },
+    "/academio/registration_packs": {
+      "get": {
+        "summary": "Packs bought by participants (filter: participant_id)"
+      },
+      "post": {
+        "summary": "Add a pack to a registration (price defaults from the pack)"
+      }
+    },
+    "/academio/registration_packs/{id}": {
+      "delete": {
+        "summary": "Remove a pack from a registration"
+      }
+    },
+    "/academio/types": {
+      "get": {
+        "summary": "Training types of the hub"
+      }
+    },
+    "/academio/locations": {
+      "get": {
+        "summary": "Training locations of the hub"
+      }
+    },
+    "/payments": {
+      "get": {
+        "summary": "Payments of the hub (filters: status, participant_id)"
+      },
+      "post": {
+        "summary": "Record a payment (participant_id, amount_cents, kind deposit|balance|full) as pending"
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "summary": "Show a payment"
+      }
+    },
+    "/payments/{id}/mark_paid": {
+      "post": {
+        "summary": "Mark paid via Payment#mark_paid! — the same gesture as the Stripe webhook"
+      }
+    },
+    "/payments/outstanding": {
+      "get": {
+        "summary": "Who has not settled: expected vs paid per participant (filter: participant_list_id)"
+      }
+    },
+    "/payments/plans": {
+      "get": {
+        "summary": "Payment plans with their installments and outstanding (filter: participant_id)"
+      }
+    },
+    "/pings": {
+      "get": {
+        "summary": "MY active ping conversations (hub-scoped)"
+      },
+      "post": {
+        "summary": "Ping an exact set of people (user_ids[] + body) — idempotent find-or-create of the conversation"
+      }
+    },
+    "/pings/{id}": {
+      "get": {
+        "summary": "A conversation and its messages (newest first, offset)"
+      }
+    },
+    "/pings/{id}/messages": {
+      "post": {
+        "summary": "Reply in the conversation (body)"
+      }
+    },
+    "/pings/{id}/archive": {
+      "post": {
+        "summary": "Archive (irreversible — re-pinging starts a fresh conversation)"
+      }
+    },
+    "/nurserio/orders": {
+      "get": {
+        "summary": "Nursery orders of the hub (filter: status; newest first)"
+      },
+      "post": {
+        "summary": "Create an order: lines[][stock_batch_id, quantity] (+ member_id or customer_* fields)"
+      }
+    },
+    "/nurserio/orders/{id}": {
+      "get": {
+        "summary": "Order with its lines (reserved quantities included)"
+      }
+    },
+    "/nurserio/orders/{id}/process": {
+      "post": {
+        "summary": "new → processing: reserves stock; NON-SILENT partial reservation (unservable_lines in the response)"
+      }
+    },
+    "/nurserio/orders/{id}/ready": {
+      "post": {
+        "summary": "processing → ready (customer notified)"
+      }
+    },
+    "/nurserio/orders/{id}/pickup": {
+      "post": {
+        "summary": "ready → picked_up (reservations consumed)"
+      }
+    },
+    "/nurserio/orders/{id}/cancel": {
+      "post": {
+        "summary": "new/processing → cancelled (reservations released)"
+      }
+    },
+    "/projects": {
+      "get": {
+        "summary": "List the projects of the current hub (filter by q on the name, status)",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Case-insensitive match on the project name"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived",
+                "trashed"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a project — installs the default toolkit (same as the UI picker) unless `tools[]` restricts it",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "design",
+                "academy",
+                "circle",
+                "hq"
+              ],
+              "default": "circle"
+            }
+          },
+          {
+            "name": "tools",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "message_board",
+                  "todoset",
+                  "card_table",
+                  "vault",
+                  "schedule",
+                  "campfire"
+                ]
+              }
+            },
+            "description": "Omit to install the default toolkit (message_board, todoset, card_table, vault, schedule, campfire)"
+          },
+          {
+            "name": "design_phase",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "reception",
+                "offer",
+                "pre_design",
+                "detailed_design",
+                "implementation",
+                "completed"
+              ]
+            },
+            "description": "kind=design only — the design's current phase. Defaults to reception. An unknown value returns 422."
+          },
+          {
+            "name": "design_project_type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prive",
+                "professionnel",
+                "collectif",
+                "public"
+              ]
+            },
+            "description": "kind=design only — who the design is for. Optional."
+          },
+          {
+            "name": "design_kind",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "client",
+                "interne"
+              ]
+            },
+            "description": "kind=design only — client work or internal. Optional."
+          }
+        ]
+      }
+    },
+    "/projects/{project_id}/tools": {
+      "post": {
+        "summary": "Install a tool on an existing project (idempotent — re-installing returns the existing tool with 200)",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "message_board",
+                "todoset",
+                "vault",
+                "card_table",
+                "campfire",
+                "schedule",
+                "reporting",
+                "external_link"
+              ]
+            },
+            "description": "An uninstallable kind (questionnaire, participant_list, palette, plan, inbox) returns 422 tool_not_installable."
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Defaults to the hub's name for that tool"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for external_link (422 url_required otherwise)"
+          }
+        ]
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "summary": "Show a project of the current hub with its installed tools"
+      },
+      "patch": {
+        "summary": "Update name, description, color, status (archivable statuses only)"
+      }
+    },
+    "/interface_grants": {
+      "get": {
+        "summary": "List interface grants governed by the current hub (admin)"
+      },
+      "post": {
+        "summary": "Grant a constellation interface to a user (admin)"
+      }
+    },
+    "/interface_grants/{id}": {
+      "delete": {
+        "summary": "Revoke an interface grant (admin)"
+      }
+    },
+    "/members": {
+      "get": {
+        "summary": "List global members"
+      },
+      "post": {
+        "summary": "Create a global member (admin)"
+      }
+    },
+    "/members/{id}": {
+      "get": {
+        "summary": "Show a global member"
+      }
+    },
+    "/member_enrollments": {
+      "get": {
+        "summary": "List member enrollments of the current hub (admin)"
+      },
+      "post": {
+        "summary": "Enroll a member in the current hub (admin)"
+      }
+    },
+    "/member_enrollments/{id}": {
+      "delete": {
+        "summary": "Remove a member enrollment (admin)"
+      }
+    },
+    "/hubs": {
+      "get": {
+        "summary": "List hubs with aggregate stats (superadmin, network scope)"
+      },
+      "post": {
+        "summary": "Provision a new hub — HQ project, default poles, initial admin (superadmin)"
+      }
+    },
+    "/hubs/{id}": {
+      "get": {
+        "summary": "Show a hub with aggregate stats (superadmin)"
+      },
+      "put": {
+        "summary": "Update a hub's identity/config (superadmin)"
+      },
+      "delete": {
+        "summary": "Delete a hub (superadmin)"
+      }
+    },
+    "/plant/genera": {
+      "get": {
+        "summary": "List botanical genera (global Planto catalog)"
+      },
+      "post": {
+        "summary": "Create a genus (requires the planto scope)"
+      }
+    },
+    "/plant/genera/{id}": {
+      "get": {
+        "summary": "Show a genus with its species ids"
+      },
+      "patch": {
+        "summary": "Update a genus (requires the planto scope)"
+      }
+    },
+    "/plant/species": {
+      "get": {
+        "summary": "List species (filter by genus_id, q)"
+      },
+      "post": {
+        "summary": "Create a species (planto scope; multipart `silhouette_illustration` attaches the botanical illustration)"
+      }
+    },
+    "/plant/species/{id}": {
+      "get": {
+        "summary": "Show a species with its rich botanical fields"
+      },
+      "patch": {
+        "summary": "Update a species (planto scope; multipart `silhouette_illustration` attaches or replaces the illustration)"
+      }
+    },
+    "/plant/varieties": {
+      "get": {
+        "summary": "List varieties (filter by species_id)"
+      },
+      "post": {
+        "summary": "Create a variety (requires the planto scope)"
+      }
+    },
+    "/plant/varieties/{id}": {
+      "get": {
+        "summary": "Show a variety"
+      },
+      "patch": {
+        "summary": "Update a variety (requires the planto scope)"
+      }
+    },
+    "/nurserio/stock_batches": {
+      "get": {
+        "summary": "List stock batches of the current hub (filter by site_id, species_id, variety_id, in_stock, limit)"
+      },
+      "post": {
+        "summary": "Create a stock batch (reserved_quantity is refused — driven by orders)"
+      }
+    },
+    "/nurserio/stock_batches/{id}": {
+      "get": {
+        "summary": "Show a stock batch (species/variety, container, site, quantities, stage, price)"
+      },
+      "patch": {
+        "summary": "Update a stock batch (quantities, price, stage — reserved_quantity is refused)"
+      }
+    },
+    "/nurserio/sites": {
+      "get": {
+        "summary": "List the hub's nursery sites / pickup points (read-only reference)"
+      }
+    },
+    "/nurserio/containers": {
+      "get": {
+        "summary": "List the hub's production containers (read-only reference)"
+      }
+    },
+    "/administratio/expenses": {
+      "get": {
+        "summary": "List expenses of the current hub (filter by status, from, to, external_ref, limit, offset)"
+      },
+      "post": {
+        "summary": "Create an expense (multipart `document` attaches the receipt; VAT/total are computed server-side)"
+      }
+    },
+    "/administratio/expenses/{id}": {
+      "get": {
+        "summary": "Show an expense of the current hub"
+      },
+      "patch": {
+        "summary": "Update an expense (multipart `document` attaches or replaces the receipt)"
+      }
+    },
+    "/administratio/revenues": {
+      "get": {
+        "summary": "List revenues of the current hub (filter by status, q, from, to, limit, offset)"
+      },
+      "post": {
+        "summary": "Create a revenue (cents amounts; multi-rate via lines_attributes; VAT/total computed server-side)"
+      }
+    },
+    "/administratio/revenues/{id}": {
+      "get": {
+        "summary": "Show a revenue of the current hub"
+      },
+      "patch": {
+        "summary": "Update a revenue (lines_attributes with _destroy to edit multi-rate lines)"
+      }
+    },
+    "/administratio/structures": {
+      "get": {
+        "summary": "List the hub's legal structures (name, VAT regime, default) — structure_id for pieces"
+      }
+    },
+    "/administratio/transactions": {
+      "get": {
+        "summary": "List ledger transactions (filter by status, cash_account_id, q, from, to, limit, offset)"
+      }
+    },
+    "/administratio/transactions/{id}": {
+      "get": {
+        "summary": "Show a ledger transaction"
+      }
+    },
+    "/administratio/transactions/{id}/reconcile": {
+      "post": {
+        "summary": "Reconcile with a document (document_type: Expense|Revenue, document_id) — marks the piece paid/received"
+      },
+      "delete": {
+        "summary": "Undo the reconciliation"
+      }
+    },
+    "/administratio/transactions/{id}/ignore": {
+      "post": {
+        "summary": "Set aside a movement with no piece (bank fees, internal transfer…)"
+      }
+    },
+    "/administratio/transactions/{id}/restore": {
+      "post": {
+        "summary": "Put an ignored movement back in the queue"
+      }
+    },
+    "/administratio/mileage_claims": {
+      "get": {
+        "summary": "List mileage claims of the current hub (filter by status, limit, offset)"
+      }
+    },
+    "/administratio/mileage_claims/{id}": {
+      "get": {
+        "summary": "Show a mileage claim of the current hub"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Recording": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "recordable_type": {
+            "type": "string",
+            "enum": [
+              "MessageBoard",
+              "Message",
+              "Comment",
+              "Todoset",
+              "Todolist",
+              "TodoGroup",
+              "Todo",
+              "CardTable",
+              "CardColumn",
+              "Card",
+              "Vault",
+              "Document",
+              "Upload",
+              "CloudLink",
+              "Schedule",
+              "ScheduleEntry",
+              "SessionFeedback",
+              "Questionnaire",
+              "Question",
+              "Answer",
+              "Campfire",
+              "Inbox",
+              "InboxForward",
+              "ParticipantList",
+              "ParticipantCategory",
+              "TrainingPack",
+              "Participant",
+              "TrainingDocument",
+              "Palette",
+              "PaletteItem",
+              "Concept",
+              "Patch",
+              "PatchItem",
+              "CanvasFeature",
+              "PlantMarker",
+              "PhaseTransition",
+              "Annotation",
+              "DesignVersion",
+              "SiteAnalysis",
+              "MethodologyItem",
+              "Interview",
+              "ObservationNote",
+              "SoilSample",
+              "Quote",
+              "QuoteLine",
+              "PlantRecord",
+              "Intervention",
+              "FollowUpVisit",
+              "Timesheet",
+              "Contact",
+              "HillChartSnapshot"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived",
+              "trashed"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "nullable": true,
+            "description": "Rich-text body as stored HTML. Only on recordables that have one (Document, Message, Comment, Note, Answer, InboxForward, Draft)."
+          },
+          "bucket_id": {
+            "type": "integer"
+          },
+          "parent_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "todo": {
+            "type": "object",
+            "description": "Only on Todo recordings.",
+            "properties": {
+              "due_on": {
+                "type": "string",
+                "format": "date",
+                "nullable": true
+              },
+              "starts_on": {
+                "type": "string",
+                "format": "date",
+                "nullable": true
+              },
+              "completed": {
+                "type": "boolean"
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "assignees": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "completion_watcher_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "recurrence": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "daily",
+                  "weekday",
+                  "weekly",
+                  "biweekly",
+                  "monthly_by_weekday",
+                  "monthly",
+                  "yearly",
+                  "weekly_custom",
+                  "monthly_custom"
+                ]
+              },
+              "recurrence_config": {
+                "type": "object"
+              },
+              "recurrence_until": {
+                "type": "string",
+                "format": "date",
+                "nullable": true
+              },
+              "recurrence_role": {
+                "type": "string",
+                "enum": [
+                  "standalone",
+                  "series",
+                  "instance"
+                ]
+              },
+              "series_id": {
+                "type": "integer",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Plain text rendering of the rich-text description"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design",
+              "academy",
+              "circle",
+              "hq"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived",
+              "trashed"
+            ]
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "invite_only",
+              "all_access"
+            ]
+          },
+          "folder_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "pole_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "creator_id": {
+            "type": "integer"
+          },
+          "tools": {
+            "type": "array",
+            "description": "Installed tools; `root_recording_id` is the parent to compose recordings under.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "root_recording_id": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "InterfaceGrant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "interface": {
+            "type": "string",
+            "enum": [
+              "administratio",
+              "contacto",
+              "conceptio",
+              "academio",
+              "in_situ",
+              "nurserio",
+              "planto"
+            ]
+          },
+          "hub_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "granted_by_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "source_hub_id": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string"
+          }
+        }
+      },
+      "MemberEnrollment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "hub_id": {
+            "type": "integer"
+          },
+          "structure_id": {
+            "type": "integer",
+            "description": "Legal structure the member belongs to"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          }
+        }
+      },
+      "Hub": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "default_locale": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/HubStats"
+          }
+        }
+      },
+      "HubStats": {
+        "type": "object",
+        "description": "Aggregate network stats only — never hub content (ISC-241).",
+        "properties": {
+          "active_members": {
+            "type": "integer"
+          },
+          "active_projects": {
+            "type": "integer"
+          },
+          "recordings_last_30d": {
+            "type": "integer"
+          },
+          "nova_tokens": {
+            "type": "integer"
+          },
+          "storage_bytes": {
+            "type": "integer"
+          }
+        }
+      },
+      "Plant::Genus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "latin_name": {
+            "type": "string"
+          },
+          "common_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "wikipedia_url": {
+            "type": "string"
+          },
+          "species_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "Plant::Species": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "genus_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "latin_name": {
+            "type": "string"
+          },
+          "common_names_fr": {
+            "type": "string"
+          },
+          "plant_type": {
+            "type": "string",
+            "enum": [
+              "tree",
+              "shrub",
+              "small-shrub",
+              "climber",
+              "herbaceous",
+              "ground-cover"
+            ]
+          },
+          "strate": {
+            "type": "string",
+            "nullable": true
+          },
+          "edible_rating": {
+            "type": "integer",
+            "nullable": true
+          },
+          "medicinal_rating": {
+            "type": "integer",
+            "nullable": true
+          },
+          "hardiness": {
+            "type": "string"
+          },
+          "variety_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "silhouette_illustration_attached": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "silhouette_illustration_url": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        }
+      },
+      "Plant::Variety": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "species_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "latin_name": {
+            "type": "string"
+          },
+          "common_names_fr": {
+            "type": "string"
+          },
+          "taste_rating": {
+            "type": "integer",
+            "nullable": true
+          },
+          "maturity": {
+            "type": "string"
+          }
+        }
+      },
+      "Nursery::StockBatch": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "site_id": {
+            "type": "integer"
+          },
+          "species_id": {
+            "type": "integer"
+          },
+          "variety_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "container_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "available_quantity": {
+            "type": "integer"
+          },
+          "reserved_quantity": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "Driven by the Nursery::Order state machine — refused on write (422)"
+          },
+          "price_cents": {
+            "type": "integer",
+            "nullable": true
+          },
+          "growth_stage": {
+            "type": "string",
+            "enum": [
+              "seed",
+              "seedling",
+              "young",
+              "established",
+              "mature"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "in_production",
+              "sold_out",
+              "archived"
+            ]
+          },
+          "expected_availability_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "availability_label": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "species_latin_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "variety_latin_name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "container_name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "site_name": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "Nursery::Site": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nursery_type": {
+            "type": "string",
+            "enum": [
+              "semisto",
+              "partner"
+            ]
+          },
+          "integration": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "manual"
+            ]
+          },
+          "is_pickup_point": {
+            "type": "boolean"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "Nursery::Container": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "short_name": {
+            "type": "string"
+          },
+          "volume_liters": {
+            "type": "number",
+            "nullable": true
+          },
+          "display_name": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "Revenue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "confirmed",
+              "received"
+            ]
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "bank_card",
+              "bank_transfer",
+              "cash",
+              "other"
+            ]
+          },
+          "vat_rate": {
+            "type": "string",
+            "description": "Hub-configured rate, exempt/intracom, or multi when lines exist"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "amount_excl_vat_cents": {
+            "type": "integer"
+          },
+          "vat_cents": {
+            "type": "integer"
+          },
+          "total_incl_vat_cents": {
+            "type": "integer"
+          },
+          "contribution_cents": {
+            "type": "integer",
+            "description": "Part reversée au fonctionnement de l'ASBL"
+          },
+          "contact_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "pole_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "project_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "amount_excl_vat_cents": {
+                  "type": "integer"
+                },
+                "vat_rate": {
+                  "type": "string"
+                },
+                "vat_cents": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "Structure": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "enterprise_number": {
+            "type": "string"
+          },
+          "vat_regime": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "franchise"
+            ]
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "description": "Signed; negative = outgoing"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "counterpart": {
+            "type": "string"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Full bank communication (CODA)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unmatched",
+              "matched",
+              "ignored"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "cash_account_id": {
+            "type": "integer"
+          },
+          "cash_account_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "reconciled_document_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "reconciled_document_id": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Expense": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "supplier": {
+            "type": "string"
+          },
+          "supplier_contact_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "expense_type": {
+            "type": "string",
+            "enum": [
+              "services_and_goods",
+              "salaries",
+              "merchandise",
+              "taxes",
+              "financial",
+              "exceptional",
+              "other"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "processing",
+              "ready_for_payment",
+              "paid"
+            ]
+          },
+          "payment_type": {
+            "type": "string",
+            "enum": [
+              "bank_card",
+              "bank_transfer",
+              "cash",
+              "reimbursement",
+              "other"
+            ]
+          },
+          "billing_zone": {
+            "type": "string",
+            "enum": [
+              "belgium",
+              "intra_eu",
+              "extra_eu"
+            ]
+          },
+          "vat_rate": {
+            "type": "string",
+            "description": "Rate configured on the hub, or exempt/intracom (ISC-222)"
+          },
+          "invoice_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "amount_excl_vat_cents": {
+            "type": "integer"
+          },
+          "vat_cents": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "total_incl_vat_cents": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "pole_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "project_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "external_ref": {
+            "type": "string",
+            "description": "Idempotency marker for automated imports (e.g. billit:{OrderID})"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "document_attached": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "document_filename": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        }
+      },
+      "MileageClaim": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "reference": {
+            "type": "string",
+            "description": "Human identifier KM-n, unique per hub",
+            "readOnly": true
+          },
+          "sequence_number": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "structure_id": {
+            "type": "integer",
+            "description": "Legal structure carrying the claim"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "The requester"
+          },
+          "requester": {
+            "type": "string",
+            "readOnly": true
+          },
+          "kilometers": {
+            "type": "integer"
+          },
+          "rate_cents": {
+            "type": "integer",
+            "description": "Hub rate copied at submission time"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "description": "kilometers × rate_cents",
+            "readOnly": true
+          },
+          "period": {
+            "type": "string",
+            "description": "Free text, e.g. 01-03/2026"
+          },
+          "journey": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "approved",
+              "paid",
+              "rejected"
+            ]
+          },
+          "decision_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "decided_by_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paid_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "expense_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Reimbursement expense generated when marked paid"
+          }
+        }
+      }
+    }
+  }
+}
