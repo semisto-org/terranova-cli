@@ -20,6 +20,8 @@ brew install semisto-org/tap/terranova
 
 Ou : le script `install.sh` à la racine du dépôt, ou `go install github.com/semisto-org/terranova-cli/cmd/terranova@latest`.
 
+Sur Debian/Ubuntu et Fedora/RHEL : chaque release GitHub embarque des paquets `.deb` et `.rpm` (amd64 + arm64), à installer avec `dpkg -i` ou `rpm -i`. Ils se reconstruisent localement via `packaging/build-packages.sh [version]` (nfpm, sans rien ajouter au go.mod).
+
 Première fois : `terranova quick-start`. Jeton : dans l'app, **Compte & réglages → Jetons CLI**, puis `terranova auth login`.
 
 ## Pour les agents

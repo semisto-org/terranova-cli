@@ -1,0 +1,21 @@
+# Paquets deb/rpm de terranova, décrits pour nfpm (goreleaser/nfpm).
+# Version et architecture injectées par packaging/build-packages.sh via
+# NFPM_VERSION / NFPM_ARCH ; le binaire est copié au chemin stable dist/nfpm/.
+name: terranova
+arch: ${NFPM_ARCH}
+platform: linux
+version: ${NFPM_VERSION}
+section: utils
+priority: optional
+maintainer: Semisto <tech@semisto.org>
+description: >-
+  Le compagnon en ligne de commande de Terranova (app.semisto.org) —
+  gestion de projet, comptabilité, catalogue botanique et pépinière,
+  depuis le même binaire.
+vendor: Semisto
+homepage: https://github.com/semisto-org/terranova-cli
+contents:
+  - src: dist/nfpm/terranova
+    dst: /usr/bin/terranova
+    file_info:
+      mode: 0755
