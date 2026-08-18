@@ -6,17 +6,18 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // Les surfaces nées côté app dans la même nuit que ce fichier (ISC-401/407/408) :
 // recherche globale, lignes de chat, notifications — plus `my`, les vues du matin.
 func init() {
 	cli.Register(&cli.Command{
-		Name: "search", Group: "Search & Browse",
-		Summary: "Recherche globale — même index et même portée que l'écran (ISC-407).",
+		Name: "search", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpSearch,
 		ArgSpec: "<termes…>", MinArgs: 1,
 		Flags: []cli.Flag{
-			{Name: "type", Arg: "Type", Help: "Restreint à un recordable_type (Todo, Message…)."},
+			{Name: "type", Arg: "Type", Help: msg.FlagSearchType},
 		},
 		APIOps: []string{"GET /search"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -42,24 +43,24 @@ func init() {
 			}
 			rows := [][]string{}
 			for _, p := range out.Projects {
-				rows = append(rows, []string{str(p["id"]), "Projet", str(p["name"]), ""})
+				rows = append(rows, []string{str(p["id"]), msg.LabelProjet, str(p["name"]), ""})
 			}
 			for _, r := range out.Recordings {
 				rows = append(rows, []string{str(r["id"]), str(r["recordable_type"]), str(r["title"]), str(r["bucket_id"])})
 			}
-			return &cli.Result{Data: out, Headers: []string{"ID", "TYPE", "TITRE", "PROJET"}, Rows: rows,
-				Summary: fmt.Sprintf("%d recordings · %d projets.", len(out.Recordings), len(out.Projects)),
-				Crumbs:  []cli.Crumb{{Action: "ouvrir un résultat", Cmd: "terranova recordings show <id>"}}}, nil
+			return &cli.Result{Data: out, Headers: msg.HeadersTypedList, Rows: rows,
+				Summary: fmt.Sprintf(msg.ResSearchCount, len(out.Recordings), len(out.Projects)),
+				Crumbs:  []cli.Crumb{{Action: msg.CrumbOuvrirUnResultat, Cmd: "terranova recordings show <id>"}}}, nil
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "notifications", Group: "Communication",
-		Summary: "Mes notifications du hub : lister, marquer lu, tout marquer lu (ISC-408).",
+		Name: "notifications", Group: msg.GroupCommunication,
+		Summary: msg.HelpNotifications,
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Liste (— --unread pour les non-lues).",
-				Flags:  []cli.Flag{{Name: "unread", Help: "Seulement les non-lues."}},
+				Name: "list", Summary: msg.HelpNotificationsList,
+				Flags:  []cli.Flag{{Name: "unread", Help: msg.FlagNotificationsListUnread}},
 				APIOps: []string{"GET /notifications"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					unread, _ := cli.FlagBool(args, "unread")
@@ -85,17 +86,17 @@ func init() {
 						}
 						rows = append(rows, []string{read, str(n["id"]), str(n["kind"]), str(n["actor"]), str(n["title"])})
 					}
-					return &cli.Result{Data: out.Notifications, Headers: []string{"", "ID", "GENRE", "QUI", "QUOI"}, Rows: rows,
-						Summary: fmt.Sprintf("%d notification(s).", len(out.Notifications)),
+					return &cli.Result{Data: out.Notifications, Headers: msg.HeadersNotifications, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResNotificationCount, len(out.Notifications)),
 						Crumbs: []cli.Crumb{
-							{Action: "marquer lu", Cmd: "terranova notifications read <id>"},
-							{Action: "tout marquer lu", Cmd: "terranova notifications read-all"},
+							{Action: msg.CrumbMarquerLu, Cmd: "terranova notifications read <id>"},
+							{Action: msg.CrumbToutMarquerLu, Cmd: "terranova notifications read-all"},
 						}}, nil
 				},
 			},
 			{
-				Name: "read", Summary: "Marque lu (— --unread pour re-marquer non-lu).", ArgSpec: "<id>", MinArgs: 1,
-				Flags:  []cli.Flag{{Name: "unread", Help: "Marque NON-lu."}},
+				Name: "read", Summary: msg.HelpNotificationsRead, ArgSpec: "<id>", MinArgs: 1,
+				Flags:  []cli.Flag{{Name: "unread", Help: msg.FlagNotificationsReadUnread}},
 				APIOps: []string{"POST /notifications/{id}/read"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					unread, rest := cli.FlagBool(args, "unread")
@@ -112,11 +113,11 @@ func init() {
 					if err := client.Post(path, body, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Fait."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResFait}, nil
 				},
 			},
 			{
-				Name: "read-all", Summary: "Marque toutes les non-lues du hub comme lues.",
+				Name: "read-all", Summary: msg.HelpNotificationsReadAll,
 				APIOps: []string{"POST /notifications/read_all"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -127,7 +128,7 @@ func init() {
 					if err := client.Post("/notifications/read_all", nil, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: fmt.Sprintf("%s notification(s) marquée(s) lue(s).", str(out["marked_read"]))}, nil
+					return &cli.Result{Data: out, Summary: fmt.Sprintf(msg.ResMarkedRead, str(out["marked_read"]))}, nil
 				},
 			},
 		},
@@ -135,11 +136,11 @@ func init() {
 
 	// `my` — les vues du matin (ISC-410, la part que l'API offre déjà).
 	cli.Register(&cli.Command{
-		Name: "my", Group: "Scheduling & Time",
-		Summary: "Mes vues : tâches assignées, notifications non lues.",
+		Name: "my", Group: msg.GroupSchedulingTime,
+		Summary: msg.HelpMy,
 		Sub: []*cli.Command{
 			{
-				Name: "todos", Summary: "Les tâches qui me sont assignées (via /me + assigned_to).",
+				Name: "todos", Summary: msg.HelpMyTodos,
 				APIOps: []string{"GET /me", "GET /recordings"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -165,13 +166,13 @@ func init() {
 						due := str(dig(r, "todo", "due_on"))
 						rows = append(rows, []string{str(r["id"]), str(r["title"]), due})
 					}
-					return &cli.Result{Data: out.Recordings, Headers: []string{"ID", "TÂCHE", "ÉCHÉANCE"}, Rows: rows,
-						Summary: fmt.Sprintf("%d tâche(s) assignée(s).", len(out.Recordings)),
-						Crumbs:  []cli.Crumb{{Action: "compléter", Cmd: "terranova todos edit <id> --completed true"}}}, nil
+					return &cli.Result{Data: out.Recordings, Headers: msg.HeadersMyTodos, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResAssignedTodoCount, len(out.Recordings)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbCompleter, Cmd: "terranova todos edit <id> --completed true"}}}, nil
 				},
 			},
 			{
-				Name: "timesheets", Summary: "Mes heures pointées (projets à suivi activé), avec le total.",
+				Name: "timesheets", Summary: msg.HelpMyTimesheets,
 				APIOps: []string{"GET /my/timesheets"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -189,12 +190,12 @@ func init() {
 					for _, t := range out.Timesheets {
 						rows = append(rows, []string{str(t["worked_on"]), str(t["project"]), str(t["hours"]), str(t["description"])})
 					}
-					return &cli.Result{Data: out, Headers: []string{"JOUR", "PROJET", "H", "QUOI"}, Rows: rows,
-						Summary: fmt.Sprintf("%.1f h au total.", out.TotalHours)}, nil
+					return &cli.Result{Data: out, Headers: msg.HeadersMyTimesheets, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResHoursTotal, out.TotalHours)}, nil
 				},
 			},
 			{
-				Name: "bookmarks", Summary: "Mes marque-pages, dans leur ordre.",
+				Name: "bookmarks", Summary: msg.HelpMyBookmarks,
 				APIOps: []string{"GET /my/bookmarks"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -211,12 +212,12 @@ func init() {
 					for _, b := range out.Bookmarks {
 						rows = append(rows, []string{str(b["id"]), str(b["type"]), str(b["title"]), str(b["project"])})
 					}
-					return &cli.Result{Data: out.Bookmarks, Headers: []string{"ID", "TYPE", "TITRE", "PROJET"}, Rows: rows,
-						Summary: fmt.Sprintf("%d marque-page(s).", len(out.Bookmarks))}, nil
+					return &cli.Result{Data: out.Bookmarks, Headers: msg.HeadersTypedList, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResBookmarkCount, len(out.Bookmarks))}, nil
 				},
 			},
 			{
-				Name: "notifications", Summary: "Mes notifications non lues.",
+				Name: "notifications", Summary: msg.HelpMyNotifications,
 				APIOps: []string{"GET /notifications"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					sub, _ := cli.Find([]string{"notifications", "list"})

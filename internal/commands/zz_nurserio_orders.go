@@ -5,17 +5,18 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // zz_* : greffé APRÈS l'enregistrement de `nurserio` par lenses.go (ordre
 // d'initialisation alphabétique des fichiers Go — même raison que le chat).
 func init() {
 	orders := &cli.Command{
-		Name: "orders", Summary: "Commandes clients : création avec lignes, machine d'états légale (ISC-439).",
+		Name: "orders", Summary: msg.HelpOrders,
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Liste (— --status new|processing|ready|picked_up|cancelled).",
-				Flags:  []cli.Flag{{Name: "status", Arg: "statut", Help: "Filtre par état."}},
+				Name: "list", Summary: msg.HelpOrdersList,
+				Flags:  []cli.Flag{{Name: "status", Arg: "statut", Help: msg.FlagFiltreParEtat}},
 				APIOps: []string{"GET /nurserio/orders"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					status, _ := cli.FlagValue(args, "status")
@@ -37,13 +38,13 @@ func init() {
 					for _, o := range out.Orders {
 						rows = append(rows, []string{str(o["id"]), str(o["order_number"]), str(o["status"]), str(o["customer_name"]), str(o["total_cents"])})
 					}
-					return &cli.Result{Data: out.Orders, Headers: []string{"ID", "N°", "ÉTAT", "CLIENT", "TOTAL (c)"}, Rows: rows,
-						Summary: fmt.Sprintf("%d commande(s).", len(out.Orders)),
-						Crumbs:  []cli.Crumb{{Action: "préparer", Cmd: "terranova nurserio orders process <id>"}}}, nil
+					return &cli.Result{Data: out.Orders, Headers: msg.HeadersOrders, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResOrderCount, len(out.Orders)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbPreparer, Cmd: "terranova nurserio orders process <id>"}}}, nil
 				},
 			},
 			{
-				Name: "show", Summary: "Détail avec les lignes (réservé inclus).", ArgSpec: "<id>", MinArgs: 1,
+				Name: "show", Summary: msg.HelpOrdersShow, ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"GET /nurserio/orders/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -58,24 +59,24 @@ func init() {
 				},
 			},
 			{
-				Name: "add", Summary: "Crée une commande : --line <stock_batch_id>:<quantité> (répétable).",
+				Name: "add", Summary: msg.HelpOrdersAdd,
 				Flags: []cli.Flag{
-					{Name: "line", Arg: "batch:qty", Help: "Une ligne (répétable) : id de lot:quantité."},
-					{Name: "customer", Arg: "nom", Help: "Nom du client."},
-					{Name: "email", Arg: "email", Help: "Email du client."},
-					{Name: "phone", Arg: "tél", Help: "Téléphone."},
-					{Name: "member-id", Arg: "id", Help: "Ou : le membre qui commande."},
-					{Name: "pickup-site-id", Arg: "id", Help: "Site de retrait."},
-					{Name: "pickup-on", Arg: "date", Help: "Jour de retrait souhaité."},
-					{Name: "notes", Arg: "texte", Help: "Notes."},
+					{Name: "line", Arg: "batch:qty", Help: msg.FlagOrdersAddLine},
+					{Name: "customer", Arg: "nom", Help: msg.FlagOrdersAddCustomer},
+					{Name: "email", Arg: "email", Help: msg.FlagOrdersAddEmail},
+					{Name: "phone", Arg: "tél", Help: msg.FlagOrdersAddPhone},
+					{Name: "member-id", Arg: "id", Help: msg.FlagOrdersAddMemberId},
+					{Name: "pickup-site-id", Arg: "id", Help: msg.FlagOrdersAddPickupSiteId},
+					{Name: "pickup-on", Arg: "date", Help: msg.FlagOrdersAddPickupOn},
+					{Name: "notes", Arg: "texte", Help: msg.FlagNotes},
 				},
 				APIOps: []string{"POST /nurserio/orders"},
 				Run:    runOrderAdd,
 			},
-			orderGesture("process", "Prépare : réserve le stock — les lignes NON SERVABLES sortent dans la réponse."),
-			orderGesture("ready", "Prête au retrait (le client est prévenu)."),
-			orderGesture("pickup", "Retirée : consomme les réservations."),
-			orderGesture("cancel", "Annule : libère le stock réservé."),
+			orderGesture("process", msg.HelpOrdersProcess),
+			orderGesture("ready", msg.HelpOrdersReady),
+			orderGesture("pickup", msg.HelpOrdersPickup),
+			orderGesture("cancel", msg.HelpOrdersCancel),
 		},
 	}
 	for _, cmd := range cli.Registry {
@@ -100,7 +101,7 @@ func orderGesture(name, summary string) *cli.Command {
 			}
 			summaryLine := summary
 			if unservable, ok := out["unservable_lines"].([]any); ok && len(unservable) > 0 {
-				summaryLine = fmt.Sprintf("⚠️ %d ligne(s) NON servable(s) — stock insuffisant, vois la réponse.", len(unservable))
+				summaryLine = fmt.Sprintf(msg.ResUnservableLines, len(unservable))
 			}
 			return &cli.Result{Data: out, Summary: summaryLine}, nil
 		},
@@ -118,12 +119,12 @@ func runOrderAdd(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 		parts := strings.SplitN(line, ":", 2)
 		if len(parts) != 2 {
-			return nil, cli.Usagef("--line attend <stock_batch_id>:<quantité>, reçu %q", line)
+			return nil, cli.Usagef(msg.UsageOrderLineFormat, line)
 		}
 		lines = append(lines, map[string]any{"stock_batch_id": parts[0], "quantity": parts[1]})
 	}
 	if len(lines) == 0 {
-		return nil, cli.Usagef("au moins une --line <stock_batch_id>:<quantité> est requise")
+		return nil, cli.Usagef(msg.UsageOrderLineRequired)
 	}
 	body := map[string]any{"lines": lines}
 	for flag, param := range map[string]string{"customer": "customer_name", "email": "customer_email",
@@ -144,6 +145,6 @@ func runOrderAdd(c *cli.Ctx, args []string) (*cli.Result, error) {
 		return nil, err
 	}
 	id := str(dig(out, "order", "id"))
-	return &cli.Result{Data: out, Summary: "Commande créée (n° " + str(dig(out, "order", "order_number")) + ").",
-		Crumbs: []cli.Crumb{{Action: "préparer (réserver le stock)", Cmd: "terranova nurserio orders process " + id}}}, nil
+	return &cli.Result{Data: out, Summary: fmt.Sprintf(msg.ResOrderCreated, str(dig(out, "order", "order_number"))),
+		Crumbs: []cli.Crumb{{Action: msg.CrumbPreparerReserverLeStock, Cmd: "terranova nurserio orders process " + id}}}, nil
 }

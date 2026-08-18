@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // restSpec décrit une ressource REST non-recordable (finances, botanique,
@@ -38,12 +39,12 @@ func (s restSpec) key() string {
 func buildRestCommand(s restSpec) *cli.Command {
 	cmd := &cli.Command{Name: s.Cmd, Summary: s.Summary}
 	if s.Scope != "" {
-		cmd.AgentHelp = "Scope requis : " + s.Scope + "."
+		cmd.AgentHelp = fmt.Sprintf(msg.NotesScopeRequired, s.Scope)
 	}
 	if s.List {
 		cmd.APIOps = append(cmd.APIOps, "GET "+s.Base)
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "list", Summary: "Liste.", Flags: s.Filters,
+			Name: "list", Summary: msg.HelpRestList, Flags: s.Filters,
 			APIOps: []string{"GET " + s.Base},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				params := map[string]string{}
@@ -63,14 +64,14 @@ func buildRestCommand(s restSpec) *cli.Command {
 					return nil, err
 				}
 				items, _ := out[s.key()].([]any)
-				return &cli.Result{Data: out, Summary: fmt.Sprintf("%d élément(s).", len(items))}, nil
+				return &cli.Result{Data: out, Summary: fmt.Sprintf(msg.ResElementCount, len(items))}, nil
 			},
 		})
 	}
 	if s.Show {
 		cmd.APIOps = append(cmd.APIOps, "GET "+s.Base+"/{id}")
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "show", Summary: "Détail.", ArgSpec: "<id>", MinArgs: 1,
+			Name: "show", Summary: msg.HelpRestShow, ArgSpec: "<id>", MinArgs: 1,
 			APIOps: []string{"GET " + s.Base + "/{id}"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				client, err := c.API()
@@ -88,7 +89,7 @@ func buildRestCommand(s restSpec) *cli.Command {
 	if s.Create != nil {
 		cmd.APIOps = append(cmd.APIOps, "POST "+s.Base)
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "add", Summary: "Crée.", Flags: s.Create,
+			Name: "add", Summary: msg.HelpRestAdd, Flags: s.Create,
 			APIOps: []string{"POST " + s.Base},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				body, _ := flagsToBody(s.Create, args)
@@ -100,7 +101,7 @@ func buildRestCommand(s restSpec) *cli.Command {
 				if err := client.Post(s.Base, body, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Créé."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResCree}, nil
 			},
 		})
 	}
@@ -111,12 +112,12 @@ func buildRestCommand(s restSpec) *cli.Command {
 		}
 		cmd.APIOps = append(cmd.APIOps, method+" "+s.Base+"/{id}")
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "edit", Summary: "Modifie.", ArgSpec: "<id>", MinArgs: 1, Flags: s.Update,
+			Name: "edit", Summary: msg.HelpRestEdit, ArgSpec: "<id>", MinArgs: 1, Flags: s.Update,
 			APIOps: []string{method + " " + s.Base + "/{id}"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				body, _ := flagsToBody(s.Update, args[1:])
 				if len(body) == 0 {
-					return nil, cli.Usagef("rien à modifier — vois les drapeaux avec --help")
+					return nil, cli.Usagef(msg.UsageNothingToEditRest)
 				}
 				client, err := c.API()
 				if err != nil {
@@ -126,17 +127,17 @@ func buildRestCommand(s restSpec) *cli.Command {
 				if err := client.Do(method, s.Base+"/"+args[0], body, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Modifié."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResModifie}, nil
 			},
 		})
 	}
 	if s.Delete {
 		cmd.APIOps = append(cmd.APIOps, "DELETE "+s.Base+"/{id}")
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "remove", Summary: "Supprime (confirmation, ou --yes).", ArgSpec: "<id>", MinArgs: 1,
+			Name: "remove", Summary: msg.HelpRestRemove, ArgSpec: "<id>", MinArgs: 1,
 			APIOps: []string{"DELETE " + s.Base + "/{id}"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
-				if err := confirm(c, fmt.Sprintf("Supprimer %s/%s ?", s.Base, args[0])); err != nil {
+				if err := confirm(c, fmt.Sprintf(msg.AskDeleteResource, s.Base, args[0])); err != nil {
 					return nil, err
 				}
 				client, err := c.API()
@@ -147,7 +148,7 @@ func buildRestCommand(s restSpec) *cli.Command {
 				if err := client.Delete(s.Base+"/"+args[0], &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Supprimé."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResSupprime}, nil
 			},
 		})
 	}
@@ -192,35 +193,35 @@ func group(name, groupName, summary, agentHelp string, subs ...*cli.Command) *cl
 func init() {
 	// ── Projects & tools (ISC-395/396) ──
 	projects := buildRestCommand(restSpec{
-		Cmd: "projects", Base: "/projects", Summary: "Projets du hub : la visibilité est celle de l'accueil web (ISC-374).",
+		Cmd: "projects", Base: "/projects", Summary: msg.HelpProjects,
 		List: true, Show: true,
 		Update: []cli.Flag{
-			{Name: "name", Arg: "nom", Help: "Nom du projet."},
-			{Name: "description", Arg: "texte", Help: "Description."},
-			{Name: "color", Arg: "couleur", Help: "Couleur."},
-			{Name: "status", Arg: "statut", Help: "Statut (valeurs archivables seulement)."},
+			{Name: "name", Arg: "nom", Help: msg.FlagProjectsName},
+			{Name: "description", Arg: "texte", Help: msg.FlagDescription},
+			{Name: "color", Arg: "couleur", Help: msg.FlagProjectsColor},
+			{Name: "status", Arg: "statut", Help: msg.FlagProjectsStatus},
 		},
 		Create: []cli.Flag{
-			{Name: "name", Arg: "nom", Help: "Nom du projet (obligatoire)."},
-			{Name: "kind", Arg: "genre", Help: "circle|design|hq… (défaut circle)."},
-			{Name: "description", Arg: "texte", Help: "Description."},
-			{Name: "access", Arg: "accès", Help: "invite_only|all_access."},
+			{Name: "name", Arg: "nom", Help: msg.FlagProjectsNameRequired},
+			{Name: "kind", Arg: "genre", Help: msg.FlagProjectsKind},
+			{Name: "description", Arg: "texte", Help: msg.FlagDescription},
+			{Name: "access", Arg: "accès", Help: msg.FlagProjectsAccess},
 		},
 	})
 	projects.Group = "Core"
 	projects.Sub = append(projects.Sub, &cli.Command{
-		Name: "tools", Summary: "Le dock : installer un outil dans un projet (ISC-396).",
+		Name: "tools", Summary: msg.HelpTools,
 		ArgSpec: "<project_id>", MinArgs: 1,
 		Flags: []cli.Flag{
-			{Name: "install", Arg: "kind", Help: "Installe : message_board|todoset|vault|campfire|schedule|questionnaire|card_table|inbox…"},
-			{Name: "name", Arg: "nom", Help: "Nom de l'outil installé."},
+			{Name: "install", Arg: "kind", Help: msg.FlagToolsInstall},
+			{Name: "name", Arg: "nom", Help: msg.FlagToolsName},
 		},
 		APIOps: []string{"POST /projects/{project_id}/tools"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			kind, rest := cli.FlagValue(args, "install")
 			name, rest := cli.FlagValue(rest, "name")
 			if kind == "" {
-				return nil, cli.Usagef("usage : terranova projects tools <project_id> --install <kind> [--name <nom>]")
+				return nil, cli.Usagef(msg.UsageProjectsTools)
 			}
 			client, err := c.API()
 			if err != nil {
@@ -234,15 +235,15 @@ func init() {
 			if err := client.Post("/projects/"+rest[0]+"/tools", body, &out); err != nil {
 				return nil, err
 			}
-			return &cli.Result{Data: out, Summary: "Outil installé."}, nil
+			return &cli.Result{Data: out, Summary: msg.ResOutilInstalle}, nil
 		},
 	})
 	projects.Sub = append(projects.Sub, &cli.Command{
-		Name: "people", Summary: "Qui participe au projet : lister, ajouter (--add), retirer (--remove) — membres du hub seulement (ISC-395).",
+		Name: "people", Summary: msg.HelpPeople,
 		ArgSpec: "<project_id>", MinArgs: 1,
 		Flags: []cli.Flag{
-			{Name: "add", Arg: "user_id", Help: "Ajoute ce membre du hub au projet."},
-			{Name: "remove", Arg: "user_id", Help: "Retire cette personne du projet."},
+			{Name: "add", Arg: "user_id", Help: msg.FlagPeopleAdd},
+			{Name: "remove", Arg: "user_id", Help: msg.FlagPeopleRemove},
 		},
 		APIOps: []string{"GET /projects/{project_id}/people", "POST /projects/{project_id}/people", "DELETE /projects/{project_id}/people/{id}"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -258,13 +259,13 @@ func init() {
 				if err := client.Post("/projects/"+pid+"/people", map[string]any{"user_id": add}, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Ajouté au projet."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResAjouteAuProjet}, nil
 			}
 			if remove != "" {
 				if err := client.Delete("/projects/"+pid+"/people/"+remove, nil); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: map[string]any{"removed": remove}, Summary: "Retiré du projet."}, nil
+				return &cli.Result{Data: map[string]any{"removed": remove}, Summary: msg.ResRetireDuProjet}, nil
 			}
 			var out struct {
 				People []map[string]any `json:"people"`
@@ -277,137 +278,137 @@ func init() {
 			for _, p := range out.People {
 				rows = append(rows, []string{str(p["id"]), str(p["name"]), str(p["email"])})
 			}
-			return &cli.Result{Data: out, Headers: []string{"ID", "NOM", "EMAIL"}, Rows: rows,
-				Summary: fmt.Sprintf("%d participant(s) · accès %s.", len(out.People), out.Access)}, nil
+			return &cli.Result{Data: out, Headers: msg.HeadersPeople, Rows: rows,
+				Summary: fmt.Sprintf(msg.ResPeopleCount, len(out.People), out.Access)}, nil
 		},
 	})
 	cli.Register(projects)
 
 	// ── People & organisation (ISC-409/420) ──
 	people := buildRestCommand(restSpec{
-		Cmd: "people", Base: "/members", Key: "members", Summary: "L'annuaire du hub (membres).",
+		Cmd: "people", Base: "/members", Key: "members", Summary: msg.HelpPeopleDirectory,
 		List: true, Show: true,
 		Create: []cli.Flag{
-			{Name: "email", Arg: "email", Help: "Email de la personne."},
-			{Name: "first-name", Arg: "prénom", Help: "Prénom."},
-			{Name: "last-name", Arg: "nom", Help: "Nom."},
+			{Name: "email", Arg: "email", Help: msg.FlagPeopleEmail},
+			{Name: "first-name", Arg: "prénom", Help: msg.FlagPeopleFirstName},
+			{Name: "last-name", Arg: "nom", Help: msg.FlagPeopleLastName},
 		},
 	})
 	people.Group = "Organisation"
 	cli.Register(people)
 
 	enroll := buildRestCommand(restSpec{
-		Cmd: "enrollments", Base: "/member_enrollments", Summary: "Adhésions membre ↔ hub.",
+		Cmd: "enrollments", Base: "/member_enrollments", Summary: msg.HelpEnrollments,
 		List: true, Delete: true,
 		Create: []cli.Flag{
-			{Name: "member-id", Arg: "id", Help: "Le membre."},
-			{Name: "role", Arg: "rôle", Help: "Le rôle."},
+			{Name: "member-id", Arg: "id", Help: msg.FlagEnrollmentsMemberId},
+			{Name: "role", Arg: "rôle", Help: msg.FlagEnrollmentsRole},
 		},
 	})
 	enroll.Group = "Organisation"
 	cli.Register(enroll)
 
 	grants := buildRestCommand(restSpec{
-		Cmd: "grants", Base: "/interface_grants", Summary: "Grants d'interface (qui voit quelle lentille).",
-		List: true, Delete: true, Scope: "projecto (lecture), admin (écriture)",
+		Cmd: "grants", Base: "/interface_grants", Summary: msg.HelpGrants,
+		List: true, Delete: true, Scope: msg.ScopeGrants,
 		Create: []cli.Flag{
-			{Name: "user-id", Arg: "id", Help: "La personne."},
-			{Name: "interface", Arg: "clé", Help: "administratio|contacto|conceptio|academio|in_situ|nurserio|planto."},
+			{Name: "user-id", Arg: "id", Help: msg.FlagGrantsUserId},
+			{Name: "interface", Arg: "clé", Help: msg.FlagGrantsInterface},
 		},
 	})
 	grants.Group = "Organisation"
 	cli.Register(grants)
 
 	// ── Planto (ISC-414) — lecture ouverte, écriture derrière le grant ──
-	cli.Register(group("planto", "Lentilles",
-		"Catalogue botanique global : genres, espèces, variétés (lecture ouverte à tout membre).",
-		"Écriture derrière le grant global planto (READ_OPEN_SHELLS).",
-		buildRestCommand(restSpec{Cmd: "genera", Base: "/plant/genera", Summary: "Genres botaniques.",
-			List: true, Show: true, Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: "Recherche."}},
-			Create: []cli.Flag{{Name: "name", Arg: "nom", Help: "Nom latin du genre."}},
-			Update: []cli.Flag{{Name: "name", Arg: "nom", Help: "Nom latin."}, {Name: "description", Arg: "texte", Help: "Description."}}}),
-		buildRestCommand(restSpec{Cmd: "species", Base: "/plant/species", Summary: "Espèces.",
+	cli.Register(group("planto", msg.GroupLentilles,
+		msg.HelpPlanto,
+		msg.NotesPlanto,
+		buildRestCommand(restSpec{Cmd: "genera", Base: "/plant/genera", Summary: msg.HelpPlantoGenera,
+			List: true, Show: true, Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: msg.FlagPlantoGeneraQ}},
+			Create: []cli.Flag{{Name: "name", Arg: "nom", Help: msg.FlagPlantoGeneraName}},
+			Update: []cli.Flag{{Name: "name", Arg: "nom", Help: msg.FlagNomLatin}, {Name: "description", Arg: "texte", Help: msg.FlagDescription}}}),
+		buildRestCommand(restSpec{Cmd: "species", Base: "/plant/species", Summary: msg.HelpPlantoSpecies,
 			List: true, Show: true,
-			Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: "Recherche."}, {Name: "genus-id", Arg: "id", Help: "Filtre par genre."}},
-			Create:  []cli.Flag{{Name: "genus-id", Arg: "id", Help: "Le genre."}, {Name: "name", Arg: "nom", Help: "Épithète/nom latin."}},
-			Update:  []cli.Flag{{Name: "name", Arg: "nom", Help: "Nom."}, {Name: "description", Arg: "texte", Help: "Description."}}}),
-		buildRestCommand(restSpec{Cmd: "varieties", Base: "/plant/varieties", Summary: "Variétés/cultivars.",
+			Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: msg.FlagPlantoGeneraQ}, {Name: "genus-id", Arg: "id", Help: msg.FlagPlantoSpeciesGenusId}},
+			Create:  []cli.Flag{{Name: "genus-id", Arg: "id", Help: msg.FlagPlantoSpeciesGenusIdCreate}, {Name: "name", Arg: "nom", Help: msg.FlagPlantoSpeciesName}},
+			Update:  []cli.Flag{{Name: "name", Arg: "nom", Help: msg.FlagPeopleLastName}, {Name: "description", Arg: "texte", Help: msg.FlagDescription}}}),
+		buildRestCommand(restSpec{Cmd: "varieties", Base: "/plant/varieties", Summary: msg.HelpPlantoVarieties,
 			List: true, Show: true,
-			Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: "Recherche."}, {Name: "species-id", Arg: "id", Help: "Filtre par espèce."}},
-			Create:  []cli.Flag{{Name: "species-id", Arg: "id", Help: "L'espèce."}, {Name: "name", Arg: "nom", Help: "Nom de la variété."}},
-			Update:  []cli.Flag{{Name: "name", Arg: "nom", Help: "Nom."}, {Name: "description", Arg: "texte", Help: "Description."}}}),
+			Filters: []cli.Flag{{Name: "q", Arg: "texte", Help: msg.FlagPlantoGeneraQ}, {Name: "species-id", Arg: "id", Help: msg.FlagPlantoVarietiesSpeciesId}},
+			Create:  []cli.Flag{{Name: "species-id", Arg: "id", Help: msg.FlagPlantoVarietiesSpeciesIdCreate}, {Name: "name", Arg: "nom", Help: msg.FlagPlantoVarietiesName}},
+			Update:  []cli.Flag{{Name: "name", Arg: "nom", Help: msg.FlagPeopleLastName}, {Name: "description", Arg: "texte", Help: msg.FlagDescription}}}),
 	))
 
 	// ── Administratio (ISC-411) ──
 	transactions := buildRestCommand(restSpec{
-		Cmd: "transactions", Base: "/administratio/transactions", Summary: "Grand livre : transactions bancaires.",
+		Cmd: "transactions", Base: "/administratio/transactions", Summary: msg.HelpTransactions,
 		List: true, Show: true, Scope: "administratio",
 	})
 	transactions.Sub = append(transactions.Sub,
-		gesture("reconcile", "Rapproche la transaction d'une pièce.", "POST", "/administratio/transactions/%s/reconcile",
-			[]cli.Flag{{Name: "expense-id", Arg: "id", Help: "La dépense rapprochée."}, {Name: "revenue-id", Arg: "id", Help: "La recette rapprochée."}}),
-		gesture("unreconcile", "Défait le rapprochement.", "DELETE", "/administratio/transactions/%s/reconcile", nil),
-		gesture("ignore", "Écarte la transaction du rapprochement.", "POST", "/administratio/transactions/%s/ignore", nil),
-		gesture("restore", "Remet la transaction écartée.", "POST", "/administratio/transactions/%s/restore", nil),
+		gesture("reconcile", msg.HelpReconcile, "POST", "/administratio/transactions/%s/reconcile",
+			[]cli.Flag{{Name: "expense-id", Arg: "id", Help: msg.FlagReconcileExpenseId}, {Name: "revenue-id", Arg: "id", Help: msg.FlagReconcileRevenueId}}),
+		gesture("unreconcile", msg.HelpUnreconcile, "DELETE", "/administratio/transactions/%s/reconcile", nil),
+		gesture("ignore", msg.HelpIgnore, "POST", "/administratio/transactions/%s/ignore", nil),
+		gesture("restore", msg.HelpTransactionsRestore, "POST", "/administratio/transactions/%s/restore", nil),
 	)
 	moneyFlags := []cli.Flag{
-		{Name: "label", Arg: "libellé", Help: "Libellé."},
-		{Name: "amount-cents", Arg: "n", Help: "Montant TTC en centimes."},
-		{Name: "vat-rate", Arg: "taux", Help: "Taux de TVA."},
-		{Name: "happened-on", Arg: "date", Help: "Date."},
-		{Name: "category-id", Arg: "id", Help: "Catégorie."},
-		{Name: "structure-id", Arg: "id", Help: "Structure juridique."},
-		{Name: "project-id", Arg: "id", Help: "Projet (ventilation simple)."},
+		{Name: "label", Arg: "libellé", Help: msg.FlagLabel},
+		{Name: "amount-cents", Arg: "n", Help: msg.FlagAmountCents},
+		{Name: "vat-rate", Arg: "taux", Help: msg.FlagVatRate},
+		{Name: "happened-on", Arg: "date", Help: msg.FlagDate},
+		{Name: "category-id", Arg: "id", Help: msg.FlagCategoryId},
+		{Name: "structure-id", Arg: "id", Help: msg.FlagStructureId},
+		{Name: "project-id", Arg: "id", Help: msg.FlagProjectId},
 	}
-	cli.Register(group("administratio", "Lentilles",
-		"Comptabilité : dépenses, recettes, grand livre et rapprochement, structures, notes kilométriques.",
-		"Scope requis : administratio (grant + jeton).",
-		buildRestCommand(restSpec{Cmd: "expenses", Base: "/administratio/expenses", Summary: "Dépenses (HT/TVA/TTC calculés).",
+	cli.Register(group("administratio", msg.GroupLentilles,
+		msg.HelpAdministratio,
+		msg.NotesAdministratio,
+		buildRestCommand(restSpec{Cmd: "expenses", Base: "/administratio/expenses", Summary: msg.HelpAdministratioExpenses,
 			List: true, Show: true, Create: moneyFlags, Update: moneyFlags, Scope: "administratio"}),
-		buildRestCommand(restSpec{Cmd: "revenues", Base: "/administratio/revenues", Summary: "Recettes.",
+		buildRestCommand(restSpec{Cmd: "revenues", Base: "/administratio/revenues", Summary: msg.HelpAdministratioRevenues,
 			List: true, Show: true, Create: moneyFlags, Update: moneyFlags, Scope: "administratio"}),
 		transactions,
 		buildRestCommand(restSpec{Cmd: "mileage-claims", Base: "/administratio/mileage_claims", Key: "mileage_claims",
-			Summary: "Notes de frais kilométriques.", List: true, Show: true, Scope: "administratio"}),
-		buildRestCommand(restSpec{Cmd: "structures", Base: "/administratio/structures", Summary: "Structures juridiques du hub.",
+			Summary: msg.HelpAdministratioMileageClaims, List: true, Show: true, Scope: "administratio"}),
+		buildRestCommand(restSpec{Cmd: "structures", Base: "/administratio/structures", Summary: msg.HelpAdministratioStructures,
 			List: true, Scope: "administratio"}),
 	))
 
 	// ── Nurserio (ISC-417) ──
-	cli.Register(group("nurserio", "Lentilles",
-		"Pépinière : sites, contenants, lots de stock.",
-		"Scope requis : nurserio.",
+	cli.Register(group("nurserio", msg.GroupLentilles,
+		msg.HelpNurserio,
+		msg.NotesNurserio,
 		buildRestCommand(restSpec{Cmd: "stock-batches", Base: "/nurserio/stock_batches", Key: "stock_batches",
-			Summary: "Lots de stock (machine d'états gardée).", List: true, Show: true,
+			Summary: msg.HelpNurserioStockBatches, List: true, Show: true,
 			Create: []cli.Flag{
-				{Name: "variety-id", Arg: "id", Help: "La variété (catalogue Planto)."},
-				{Name: "site-id", Arg: "id", Help: "Le site."},
-				{Name: "container-id", Arg: "id", Help: "Le contenant."},
-				{Name: "quantity", Arg: "n", Help: "Quantité."},
-				{Name: "status", Arg: "statut", Help: "Statut du lot."},
+				{Name: "variety-id", Arg: "id", Help: msg.FlagNurserioStockBatchesVarietyId},
+				{Name: "site-id", Arg: "id", Help: msg.FlagNurserioStockBatchesSiteId},
+				{Name: "container-id", Arg: "id", Help: msg.FlagNurserioStockBatchesContainerId},
+				{Name: "quantity", Arg: "n", Help: msg.FlagQuantite},
+				{Name: "status", Arg: "statut", Help: msg.FlagNurserioStockBatchesStatus},
 			},
-			Update: []cli.Flag{{Name: "quantity", Arg: "n", Help: "Quantité."}, {Name: "status", Arg: "statut", Help: "Statut."}},
+			Update: []cli.Flag{{Name: "quantity", Arg: "n", Help: msg.FlagQuantite}, {Name: "status", Arg: "statut", Help: msg.FlagNurserioStockBatchesStatusEdit}},
 			Scope:  "nurserio"}),
-		buildRestCommand(restSpec{Cmd: "sites", Base: "/nurserio/sites", Summary: "Sites de production.", List: true, Scope: "nurserio"}),
-		buildRestCommand(restSpec{Cmd: "containers", Base: "/nurserio/containers", Summary: "Contenants.", List: true, Scope: "nurserio"}),
+		buildRestCommand(restSpec{Cmd: "sites", Base: "/nurserio/sites", Summary: msg.HelpNurserioSites, List: true, Scope: "nurserio"}),
+		buildRestCommand(restSpec{Cmd: "containers", Base: "/nurserio/containers", Summary: msg.HelpNurserioContainers, List: true, Scope: "nurserio"}),
 	))
 
 	// ── Network (ISC-419) — superadmin ──
 	networkHubs := buildRestCommand(restSpec{
-		Cmd: "hubs", Base: "/hubs", Summary: "Tous les hubs du réseau (superadmin).",
+		Cmd: "hubs", Base: "/hubs", Summary: msg.HelpNetworkHubs,
 		List: true, Show: true, Delete: true, Scope: "network", UpdateMethod: "PUT",
 		Create: []cli.Flag{
-			{Name: "name", Arg: "nom", Help: "Nom du hub."},
-			{Name: "subdomain", Arg: "clé", Help: "Sous-domaine."},
+			{Name: "name", Arg: "nom", Help: msg.FlagNetworkHubsName},
+			{Name: "subdomain", Arg: "clé", Help: msg.FlagNetworkHubsSubdomain},
 		},
 		Update: []cli.Flag{
-			{Name: "name", Arg: "nom", Help: "Nom du hub."},
-			{Name: "default-locale", Arg: "locale", Help: "Locale par défaut."},
+			{Name: "name", Arg: "nom", Help: msg.FlagNetworkHubsName},
+			{Name: "default-locale", Arg: "locale", Help: msg.FlagNetworkHubsDefaultLocale},
 		},
 	})
-	cli.Register(group("network", "Lentilles",
-		"Réseau (superadmin) : hubs de la constellation. L'usurpation d'identité reste hors CLI, à dessein.",
-		"Scope requis : network (superadmin). ISC-419 : impersonation exclue — un geste de cette portée laisse une trace d'interface.",
+	cli.Register(group("network", msg.GroupLentilles,
+		msg.HelpNetwork,
+		msg.NotesNetwork,
 		networkHubs,
 	))
 }
@@ -420,7 +421,7 @@ func gesture(name, summary, method, pathFmt string, flags []cli.Flag) *cli.Comma
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			body, rest := flagsToBody(flags, args)
 			if len(rest) == 0 {
-				return nil, cli.Usagef("il manque l'identifiant")
+				return nil, cli.Usagef(msg.UsageMissingID)
 			}
 			client, err := c.API()
 			if err != nil {

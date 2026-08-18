@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/semisto-org/terranova-cli/internal/config"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 type Client struct {
@@ -37,9 +38,9 @@ type Error struct {
 
 func (e *Error) Error() string {
 	if e.Code != "" {
-		return fmt.Sprintf("HTTP %d — %s", e.Status, e.Code)
+		return fmt.Sprintf(msg.ErrHTTPWithCode, e.Status, e.Code)
 	}
-	return fmt.Sprintf("HTTP %d", e.Status)
+	return fmt.Sprintf(msg.ErrHTTP, e.Status)
 }
 
 // Bare construit un client sans passer par le stockage — pour valider un jeton
@@ -127,7 +128,7 @@ func (c *Client) once(method, path string, payload []byte, out any) error {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if c.Verbose >= 2 {
-		fmt.Fprintf(os.Stderr, "→ %s %s\n", method, url)
+		fmt.Fprintf(os.Stderr, msg.VerboseRequest, method, url)
 	}
 	res, err := c.HTTP.Do(req)
 	if err != nil {
@@ -139,7 +140,7 @@ func (c *Client) once(method, path string, payload []byte, out any) error {
 		return err
 	}
 	if c.Verbose >= 2 {
-		fmt.Fprintf(os.Stderr, "← %d (%d octets)\n", res.StatusCode, len(raw))
+		fmt.Fprintf(os.Stderr, msg.VerboseResponse, res.StatusCode, len(raw))
 	}
 	if res.StatusCode >= 400 {
 		apiErr := &Error{Status: res.StatusCode, Body: raw}

@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 const DefaultBaseURL = "https://app.semisto.org/api/v1"
@@ -49,7 +51,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if err := json.Unmarshal(raw, c); err != nil {
-		return nil, fmt.Errorf("config.json illisible : %w", err)
+		return nil, fmt.Errorf(msg.ErrConfigUnreadable, err)
 	}
 	if c.Profiles == nil {
 		c.Profiles = map[string]*Profile{}
@@ -196,7 +198,7 @@ func fileGet(profile string) (string, error) {
 		return "", err
 	}
 	if creds[profile] == "" {
-		return "", fmt.Errorf("aucun jeton pour le profil %q — lance `terranova auth login`", profile)
+		return "", fmt.Errorf(msg.ErrNoTokenForProfile, profile)
 	}
 	return creds[profile], nil
 }

@@ -10,14 +10,15 @@ import (
 	"time"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 const releasesLatest = "https://api.github.com/repos/semisto-org/terranova-cli/releases/latest"
 
 func init() {
 	cli.Register(&cli.Command{
-		Name: "upgrade", Group: "Auth & Config",
-		Summary: "Met le binaire à jour en place depuis la dernière release (ISC-425).",
+		Name: "upgrade", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpUpgrade,
 		Run:     runUpgrade,
 	})
 }
@@ -40,11 +41,11 @@ func runUpgrade(c *cli.Ctx, args []string) (*cli.Result, error) {
 		return nil, err
 	}
 	if release.TagName == "" {
-		return nil, fmt.Errorf("aucune release publiée")
+		return nil, fmt.Errorf(msg.ErrNoReleasePublished)
 	}
 	if release.TagName == c.Version || "v"+c.Version == release.TagName {
 		return &cli.Result{Data: map[string]string{"version": c.Version},
-			Summary: "Déjà à jour (" + c.Version + ")."}, nil
+			Summary: fmt.Sprintf(msg.ResAlreadyCurrent, c.Version)}, nil
 	}
 	want := fmt.Sprintf("terranova_%s_%s", runtime.GOOS, runtime.GOARCH)
 	var url string
@@ -54,7 +55,7 @@ func runUpgrade(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 	}
 	if url == "" {
-		return nil, fmt.Errorf("pas de binaire %s dans la release %s", want, release.TagName)
+		return nil, fmt.Errorf(msg.ErrNoBinaryInRelease, want, release.TagName)
 	}
 	self, err := os.Executable()
 	if err != nil {
@@ -80,5 +81,5 @@ func runUpgrade(c *cli.Ctx, args []string) (*cli.Result, error) {
 		return nil, err
 	}
 	return &cli.Result{Data: map[string]string{"from": c.Version, "to": release.TagName},
-		Summary: "Mis à jour : " + c.Version + " → " + release.TagName + "."}, nil
+		Summary: fmt.Sprintf(msg.ResUpgraded, c.Version, release.TagName)}, nil
 }

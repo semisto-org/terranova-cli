@@ -12,6 +12,7 @@ import (
 	"github.com/semisto-org/terranova-cli/internal/api"
 	"github.com/semisto-org/terranova-cli/internal/cli"
 	"github.com/semisto-org/terranova-cli/internal/config"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 	"golang.org/x/term"
 )
 
@@ -20,47 +21,47 @@ var Version = "dev"
 
 func init() {
 	cli.Register(&cli.Command{
-		Name: "version", Group: "Auth & Config",
-		Summary: "Affiche la version du binaire.",
+		Name: "version", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpVersion,
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			return &cli.Result{Data: map[string]string{"version": Version}}, nil
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "auth", Group: "Auth & Config",
-		Summary: "Jeton d'accès : login, status, logout, token.",
+		Name: "auth", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpAuth,
 		Sub: []*cli.Command{
 			{
 				Name:    "login",
-				Summary: "Range un jeton API (trousseau système, repli fichier 0600).",
+				Summary: msg.HelpAuthLogin,
 				Flags: []cli.Flag{
-					{Name: "token", Arg: "jeton", Help: "Le jeton — sinon demandé au clavier (saisie masquée)."},
-					{Name: "hub", Arg: "id", Help: "Hub par défaut du profil."},
+					{Name: "token", Arg: "jeton", Help: msg.FlagAuthLoginToken},
+					{Name: "hub", Arg: "id", Help: msg.FlagAuthLoginHub},
 				},
-				AgentHelp: "Émettre le jeton dans l'app : Compte & réglages → Jetons CLI (/account/api_tokens). En mode --agent, --token est obligatoire (pas de prompt).",
+				AgentHelp: msg.NotesAuthLogin,
 				Run:       runAuthLogin,
 			},
 			{
 				Name:    "status",
-				Summary: "Dit qui l'on est, sur quel hub, avec quels droits.",
+				Summary: msg.HelpAuthStatus,
 				APIOps:  []string{"GET /me"},
 				Run:     runAuthStatus,
 			},
 			{
 				Name:    "logout",
-				Summary: "Purge le jeton du profil courant.",
+				Summary: msg.HelpAuthLogout,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					if err := config.DeleteToken(c.Profile); err != nil {
 						return nil, err
 					}
 					return &cli.Result{Data: map[string]any{"profile": c.Profile, "logged_out": true},
-						Summary: fmt.Sprintf("Jeton du profil %q purgé.", c.Profile)}, nil
+						Summary: fmt.Sprintf(msg.ResTokenPurged, c.Profile)}, nil
 				},
 			},
 			{
 				Name:    "token",
-				Summary: "Imprime le jeton pour les scripts (jamais dans les logs).",
+				Summary: msg.HelpAuthToken,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					token, err := config.Token(c.Profile)
 					if err != nil {
@@ -74,21 +75,21 @@ func init() {
 	})
 
 	cli.Register(&cli.Command{
-		Name: "me", Group: "Auth & Config",
-		Summary: "Identité, hubs et rôles, grants, scopes effectifs du jeton (« qu'est-ce que j'ai le droit de faire ici »).",
+		Name: "me", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpMe,
 		APIOps:  []string{"GET /me"},
 		Run:     runMe,
 	})
 
 	cli.Register(&cli.Command{
-		Name: "hubs", Group: "Auth & Config",
-		Summary: "La constellation : lister les hubs, choisir le hub par défaut.",
+		Name: "hubs", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpHubs,
 		APIOps:  []string{"GET /hubs", "GET /hubs/{id}"},
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Liste MES hubs — la constellation telle que je la vois (ISC-424).",
+				Name: "list", Summary: msg.HelpHubsList,
 				APIOps:    []string{"GET /me"},
-				AgentHelp: "La liste vient de /me : un membre voit ses hubs, pas ceux du réseau. La vue superadmin cross-hubs vit sous `network hubs`.",
+				AgentHelp: msg.NotesHubsList,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
 					if err != nil {
@@ -110,13 +111,13 @@ func init() {
 						}
 						rows = append(rows, []string{fmt.Sprintf("%v", h["id"]), str(h["name"]), str(h["role"]), def})
 					}
-					return &cli.Result{Data: out.Me.Hubs, Headers: []string{"ID", "NOM", "RÔLE", "DÉFAUT"}, Rows: rows,
-						Summary: fmt.Sprintf("%d hub(s).", len(out.Me.Hubs)),
-						Crumbs:  []cli.Crumb{{Action: "choisir le hub par défaut", Cmd: "terranova hubs use <id>"}}}, nil
+					return &cli.Result{Data: out.Me.Hubs, Headers: msg.HeadersHubList, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResHubCount, len(out.Me.Hubs)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbChoisirLeHubParDefaut, Cmd: "terranova hubs use <id>"}}}, nil
 				},
 			},
 			{
-				Name: "use", Summary: "Persiste le hub par défaut du profil (ISC-375).",
+				Name: "use", Summary: msg.HelpHubsUse,
 				ArgSpec: "<id>", MinArgs: 1,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					p := c.Config.Profile(c.Profile)
@@ -128,23 +129,23 @@ func init() {
 						return nil, err
 					}
 					return &cli.Result{Data: map[string]any{"profile": c.Profile, "hub": args[0]},
-						Summary: fmt.Sprintf("Hub %s par défaut pour le profil %q.", args[0], c.Profile)}, nil
+						Summary: fmt.Sprintf(msg.ResHubDefault, args[0], c.Profile)}, nil
 				},
 			},
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "api", Group: "Additional",
-		Summary: "Échappatoire brute : GET/POST/PATCH/PUT/DELETE sur un chemin de l'API (ISC-393).",
+		Name: "api", Group: msg.GroupAdditional,
+		Summary: msg.HelpApi,
 		ArgSpec: "<get|post|patch|put|delete> <chemin> [json]", MinArgs: 2,
-		AgentHelp: "Le corps JSON se passe en 3e argument ou sur stdin. Si une tâche exige cette commande, il manque une vraie commande — le signaler.",
+		AgentHelp: msg.NotesApi,
 		Run:       runAPI,
 	})
 
 	cli.Register(&cli.Command{
-		Name: "commands", Group: "Additional",
-		Summary: "Le catalogue complet de la surface (--json pour les agents).",
+		Name: "commands", Group: msg.GroupAdditional,
+		Summary: msg.HelpCommands,
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			type entry struct {
 				Cmd     string   `json:"cmd"`
@@ -159,8 +160,8 @@ func init() {
 				list = append(list, entry{Cmd: path, Group: cmd.Group, Summary: cmd.Summary, Args: cmd.ArgSpec, APIOps: cmd.APIOps})
 				rows = append(rows, []string{path, cmd.Summary})
 			})
-			return &cli.Result{Data: list, Headers: []string{"COMMANDE", "RÉSUMÉ"}, Rows: rows,
-				Summary: fmt.Sprintf("%d commandes.", len(list))}, nil
+			return &cli.Result{Data: list, Headers: msg.HeadersCommandCatalog, Rows: rows,
+				Summary: fmt.Sprintf(msg.ResCommandCount, len(list))}, nil
 		},
 	})
 }
@@ -170,9 +171,9 @@ func runAuthLogin(c *cli.Ctx, args []string) (*cli.Result, error) {
 	hub, _ := cli.FlagValue(args, "hub")
 	if token == "" {
 		if c.Flags.Agent {
-			return nil, cli.Usagef("en mode --agent, --token est obligatoire (aucun prompt)")
+			return nil, cli.Usagef(msg.UsageAgentTokenRequired)
 		}
-		fmt.Fprint(os.Stderr, "Jeton API (Compte & réglages → Jetons CLI) : ")
+		fmt.Fprint(os.Stderr, msg.PromptAPIToken)
 		if term.IsTerminal(int(os.Stdin.Fd())) {
 			raw, err := term.ReadPassword(int(os.Stdin.Fd()))
 			fmt.Fprintln(os.Stderr)
@@ -187,7 +188,7 @@ func runAuthLogin(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 	}
 	if token == "" {
-		return nil, cli.Usagef("aucun jeton fourni")
+		return nil, cli.Usagef(msg.ErrNoToken)
 	}
 
 	// Validation AVANT stockage : un jeton mort rangé est un piège différé.
@@ -196,7 +197,7 @@ func runAuthLogin(c *cli.Ctx, args []string) (*cli.Result, error) {
 		Me map[string]any `json:"me"`
 	}
 	if err := probe.Get("/me", &me); err != nil {
-		return nil, fmt.Errorf("jeton refusé par %s : %w", c.Config.BaseURL(c.Profile), err)
+		return nil, fmt.Errorf(msg.ErrTokenRefused, c.Config.BaseURL(c.Profile), err)
 	}
 	if err := config.SetToken(c.Profile, token); err != nil {
 		return nil, err
@@ -213,10 +214,10 @@ func runAuthLogin(c *cli.Ctx, args []string) (*cli.Result, error) {
 	}
 	name := str(me.Me["name"])
 	return &cli.Result{Data: map[string]any{"profile": c.Profile, "user": me.Me["name"], "hub": me.Me["current_hub"]},
-		Summary: fmt.Sprintf("Connecté : %s (profil %q).", name, c.Profile),
+		Summary: fmt.Sprintf(msg.ResLoggedIn, name, c.Profile),
 		Crumbs: []cli.Crumb{
-			{Action: "voir ses droits", Cmd: "terranova me"},
-			{Action: "lister les hubs", Cmd: "terranova hubs list"},
+			{Action: msg.CrumbVoirSesDroits, Cmd: "terranova me"},
+			{Action: msg.CrumbListerLesHubs, Cmd: "terranova hubs list"},
 		}}, nil
 }
 
@@ -236,11 +237,11 @@ func runMe(c *cli.Ctx, args []string) (*cli.Result, error) {
 		return nil, err
 	}
 	me := out.Me
-	summary := fmt.Sprintf("%s · hub %s", str(me["name"]), str(dig(me, "current_hub", "name")))
+	summary := fmt.Sprintf(msg.ResMeSummary, str(me["name"]), str(dig(me, "current_hub", "name")))
 	return &cli.Result{Data: me, Summary: summary,
 		Crumbs: []cli.Crumb{
-			{Action: "lister les projets", Cmd: "terranova projects list"},
-			{Action: "changer de hub", Cmd: "terranova hubs use <id>"},
+			{Action: msg.CrumbListerLesProjets, Cmd: "terranova projects list"},
+			{Action: msg.CrumbChangerDeHub, Cmd: "terranova hubs use <id>"},
 		}}, nil
 }
 
@@ -253,7 +254,7 @@ func runAPI(c *cli.Ctx, args []string) (*cli.Result, error) {
 	var body any
 	if len(args) > 2 {
 		if err := json.Unmarshal([]byte(args[2]), &body); err != nil {
-			return nil, cli.Usagef("corps JSON invalide : %v", err)
+			return nil, cli.Usagef(msg.UsageInvalidJSONBody, err)
 		}
 	}
 	client, err := c.API()

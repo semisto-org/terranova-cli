@@ -1,0 +1,62 @@
+package msg
+
+// Communication et parcours — recherche, notifications, vues `my`, pings,
+// activité, lignes de chat.
+
+const (
+	HelpSearch                  = "Recherche globale — même index et même portée que l'écran (ISC-407)."
+	FlagSearchType              = "Restreint à un recordable_type (Todo, Message…)."
+	CrumbOuvrirUnResultat       = "ouvrir un résultat"
+	HelpNotifications           = "Mes notifications du hub : lister, marquer lu, tout marquer lu (ISC-408)."
+	HelpNotificationsList       = "Liste (— --unread pour les non-lues)."
+	FlagNotificationsListUnread = "Seulement les non-lues."
+	CrumbMarquerLu              = "marquer lu"
+	CrumbToutMarquerLu          = "tout marquer lu"
+	HelpNotificationsRead       = "Marque lu (— --unread pour re-marquer non-lu)."
+	FlagNotificationsReadUnread = "Marque NON-lu."
+	ResFait                     = "Fait."
+	HelpNotificationsReadAll    = "Marque toutes les non-lues du hub comme lues."
+	HelpMy                      = "Mes vues : tâches assignées, notifications non lues."
+	HelpMyTodos                 = "Les tâches qui me sont assignées (via /me + assigned_to)."
+	CrumbCompleter              = "compléter"
+	HelpMyTimesheets            = "Mes heures pointées (projets à suivi activé), avec le total."
+	HelpMyBookmarks             = "Mes marque-pages, dans leur ordre."
+	HelpMyNotifications         = "Mes notifications non lues."
+	HelpPings                   = "Mes conversations directes (1:1 et groupes) : lire, pinguer, répondre, archiver."
+	HelpPingsList               = "Mes conversations actives."
+	CrumbLire                   = "lire"
+	HelpPingsShow               = "La conversation et ses messages."
+	CrumbRepondre               = "répondre"
+	HelpPingsSend               = "Pingue des personnes précises — même ensemble = même conversation (idempotent)."
+	FlagPingsSendTo             = "Les destinataires, ids séparés par des virgules (obligatoire)."
+	ResPingEnvoye               = "Ping envoyé."
+	CrumbSuivreLaConversation   = "suivre la conversation"
+	HelpPingsReply              = "Répond dans une conversation."
+	ResRepondu                  = "Répondu."
+	HelpPingsArchive            = "Archive (IRRÉVERSIBLE — re-pinguer rouvre une conversation neuve). --yes obligatoire en agent."
+	ResArchivee                 = "Archivée."
+	HelpActivity                = "Le fil d'activité du hub (— --project, même règle d'accès que l'écran)."
+	HelpEverything              = "La totale : les comptes par type + les 20 récents."
+	CrumbCreuserUnType          = "creuser un type"
+	HelpJournal                 = "Le journal d'un recording : qui a fait quoi, quand."
+	HelpLines                   = "Les lignes du feu de camp (plus récentes d'abord)."
+	HelpPost                    = "Poste une ligne, signée du porteur du jeton."
+	ResLignePostee              = "Ligne postée."
+	HelpEditLine                = "Édite SA propre ligne."
+	ResLigneEditee              = "Ligne éditée."
+	HelpDeleteLine              = "Supprime SA propre ligne (confirmation, ou --yes)."
+	ResLigneSupprimee           = "Ligne supprimée."
+)
+
+// Formats — recherche, notifications, vues du matin, pings, activité, chat.
+const (
+	ResSearchCount       = "%d recordings · %d projets."
+	ResNotificationCount = "%d notification(s)."
+	ResMarkedRead        = "%s notification(s) marquée(s) lue(s)."
+	ResAssignedTodoCount = "%d tâche(s) assignée(s)."
+	ResHoursTotal        = "%.1f h au total."
+	ResBookmarkCount     = "%d marque-page(s)."
+	ResPingCount         = "%d conversation(s)."
+	ResEventCount        = "%d événement(s)."
+	ResLineCount         = "%d ligne(s)."
+)

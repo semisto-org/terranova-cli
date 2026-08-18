@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // typeSpec décrit un recordable exposé par l'endpoint polymorphe /recordings.
@@ -26,152 +27,152 @@ type typeSpec struct {
 
 var typeSpecs = []typeSpec{
 	// ── Projecto — les 9 outils Basecamp (ISC-397→404) ──
-	{Cmd: "todosets", Type: "Todoset", Group: "Core", Summary: "Les racines To-dos des projets.", NoCreate: true},
-	{Cmd: "todolists", Type: "Todolist", Group: "Core", Summary: "Listes de tâches.", Parent: "todoset",
-		Create: []cli.Flag{{Name: "description", Arg: "texte", Help: "Description de la liste."}}},
-	{Cmd: "todogroups", Type: "TodoGroup", Group: "Core", Summary: "Groupes à l'intérieur d'une liste.", Parent: "todolist"},
-	{Cmd: "todos", Type: "Todo", Group: "Core", Summary: "Tâches : création, échéances, récurrence, complétion.", Parent: "todolist",
+	{Cmd: "todosets", Type: "Todoset", Group: msg.GroupCore, Summary: msg.HelpTodosets, NoCreate: true},
+	{Cmd: "todolists", Type: "Todolist", Group: msg.GroupCore, Summary: msg.HelpTodolists, Parent: "todoset",
+		Create: []cli.Flag{{Name: "description", Arg: "texte", Help: msg.FlagTodolistsDescription}}},
+	{Cmd: "todogroups", Type: "TodoGroup", Group: msg.GroupCore, Summary: msg.HelpTodogroups, Parent: "todolist"},
+	{Cmd: "todos", Type: "Todo", Group: msg.GroupCore, Summary: msg.HelpTodos, Parent: "todolist",
 		Create: []cli.Flag{
-			{Name: "due-on", Arg: "date", Help: "Échéance (AAAA-MM-JJ)."},
-			{Name: "starts-on", Arg: "date", Help: "Date de début."},
-			{Name: "recurrence", Arg: "règle", Help: "Récurrence (daily|weekly|monthly|yearly)."},
-			{Name: "recurrence-until", Arg: "date", Help: "Fin de la série."},
+			{Name: "due-on", Arg: "date", Help: msg.FlagDueOn},
+			{Name: "starts-on", Arg: "date", Help: msg.FlagTodosStartsOn},
+			{Name: "recurrence", Arg: "règle", Help: msg.FlagTodosRecurrence},
+			{Name: "recurrence-until", Arg: "date", Help: msg.FlagTodosRecurrenceUntil},
 		}},
-	{Cmd: "messageboards", Type: "MessageBoard", Group: "Core", Summary: "Les tableaux de messages des projets.", NoCreate: true},
-	{Cmd: "messages", Type: "Message", Group: "Core", Summary: "Messages : publier, catégoriser.", Parent: "messageboard",
+	{Cmd: "messageboards", Type: "MessageBoard", Group: msg.GroupCore, Summary: msg.HelpMessageboards, NoCreate: true},
+	{Cmd: "messages", Type: "Message", Group: msg.GroupCore, Summary: msg.HelpMessages, Parent: "messageboard",
 		Create: []cli.Flag{
-			{Name: "body", Arg: "html", Help: "Corps (HTML ActionText)."},
-			{Name: "category", Arg: "clé", Help: "Catégorie du message."},
+			{Name: "body", Arg: "html", Help: msg.FlagBodyHTML},
+			{Name: "category", Arg: "clé", Help: msg.FlagMessagesCategory},
 		}},
-	{Cmd: "cardtables", Type: "CardTable", Group: "Core", Summary: "Les tables de cartes des projets.", NoCreate: true},
-	{Cmd: "cardcolumns", Type: "CardColumn", Group: "Core", Summary: "Colonnes d'une table de cartes.", Parent: "cardtable",
-		Create: []cli.Flag{{Name: "kind", Arg: "genre", Help: "normal|triage|done (défaut normal)."}}},
-	{Cmd: "cards", Type: "Card", Group: "Core", Summary: "Cartes : création, colonne, échéance — la complétion EST la colonne done.", Parent: "cardcolumn",
+	{Cmd: "cardtables", Type: "CardTable", Group: msg.GroupCore, Summary: msg.HelpCardtables, NoCreate: true},
+	{Cmd: "cardcolumns", Type: "CardColumn", Group: msg.GroupCore, Summary: msg.HelpCardcolumns, Parent: "cardtable",
+		Create: []cli.Flag{{Name: "kind", Arg: "genre", Help: msg.FlagCardcolumnsKind}}},
+	{Cmd: "cards", Type: "Card", Group: msg.GroupCore, Summary: msg.HelpCards, Parent: "cardcolumn",
 		Create: []cli.Flag{
-			{Name: "due-on", Arg: "date", Help: "Échéance (AAAA-MM-JJ)."},
-			{Name: "body", Arg: "html", Help: "Description de la carte."},
+			{Name: "due-on", Arg: "date", Help: msg.FlagDueOn},
+			{Name: "body", Arg: "html", Help: msg.FlagCardsBody},
 		}},
-	{Cmd: "folders", Type: "Vault", Group: "Files & Docs", Summary: "Coffres et dossiers de Docs & Fichiers.", Parent: "vault parent"},
-	{Cmd: "docs", Type: "Document", Group: "Files & Docs", Summary: "Documents riches.", Parent: "vault",
-		Create: []cli.Flag{{Name: "body", Arg: "html", Help: "Corps (HTML ActionText)."}}},
-	{Cmd: "uploads", Type: "Upload", Group: "Files & Docs", Summary: "Fichiers : dépôt réel (multipart) et métadonnées.", Parent: "vault",
+	{Cmd: "folders", Type: "Vault", Group: msg.GroupFilesDocs, Summary: msg.HelpFolders, Parent: "vault parent"},
+	{Cmd: "docs", Type: "Document", Group: msg.GroupFilesDocs, Summary: msg.HelpDocs, Parent: "vault",
+		Create: []cli.Flag{{Name: "body", Arg: "html", Help: msg.FlagBodyHTML}}},
+	{Cmd: "uploads", Type: "Upload", Group: msg.GroupFilesDocs, Summary: msg.HelpUploads, Parent: "vault",
 		Create: []cli.Flag{
-			{Name: "file", Arg: "chemin", Help: "Le fichier à téléverser (multipart)."},
-			{Name: "caption", Arg: "texte", Help: "Légende."},
+			{Name: "file", Arg: "chemin", Help: msg.FlagUploadsFile},
+			{Name: "caption", Arg: "texte", Help: msg.FlagUploadsCaption},
 		}},
-	{Cmd: "links", Type: "CloudLink", Group: "Files & Docs", Summary: "Liens externes (Drive, Notion…).", Parent: "vault",
+	{Cmd: "links", Type: "CloudLink", Group: msg.GroupFilesDocs, Summary: msg.HelpLinks, Parent: "vault",
 		Create: []cli.Flag{
-			{Name: "url", Arg: "url", Help: "L'URL du lien (obligatoire)."},
-			{Name: "service", Arg: "nom", Help: "Le service (drive, notion…)."},
-			{Name: "notes", Arg: "texte", Help: "Notes."},
+			{Name: "url", Arg: "url", Help: msg.FlagLinksUrl},
+			{Name: "service", Arg: "nom", Help: msg.FlagLinksService},
+			{Name: "notes", Arg: "texte", Help: msg.FlagNotes},
 		}},
-	{Cmd: "chat", Type: "Campfire", Group: "Core", Summary: "Les feux de camp (chat) des projets.", NoCreate: true},
-	{Cmd: "checkins", Type: "Questionnaire", Group: "Core", Summary: "Les questionnaires automatiques des projets.", NoCreate: true},
-	{Cmd: "questions", Type: "Question", Group: "Core", Summary: "Questions de check-in (fréquence, pause).", Parent: "questionnaire",
-		Create: []cli.Flag{{Name: "frequency", Arg: "règle", Help: "daily|weekly|monthly (défaut weekly)."}}},
-	{Cmd: "answers", Type: "Answer", Group: "Core", Summary: "Réponses aux questions de check-in.", Parent: "question",
-		Create: []cli.Flag{{Name: "body", Arg: "html", Help: "La réponse (HTML ActionText)."}}},
-	{Cmd: "schedules", Type: "Schedule", Group: "Core", Summary: "Les agendas des projets.", NoCreate: true},
-	{Cmd: "events", Type: "ScheduleEntry", Group: "Core", Summary: "Événements : datés, journée entière, lieu.", Parent: "schedule",
+	{Cmd: "chat", Type: "Campfire", Group: msg.GroupCore, Summary: msg.HelpChat, NoCreate: true},
+	{Cmd: "checkins", Type: "Questionnaire", Group: msg.GroupCore, Summary: msg.HelpCheckins, NoCreate: true},
+	{Cmd: "questions", Type: "Question", Group: msg.GroupCore, Summary: msg.HelpQuestions, Parent: "questionnaire",
+		Create: []cli.Flag{{Name: "frequency", Arg: "règle", Help: msg.FlagQuestionsFrequency}}},
+	{Cmd: "answers", Type: "Answer", Group: msg.GroupCore, Summary: msg.HelpAnswers, Parent: "question",
+		Create: []cli.Flag{{Name: "body", Arg: "html", Help: msg.FlagAnswersBody}}},
+	{Cmd: "schedules", Type: "Schedule", Group: msg.GroupCore, Summary: msg.HelpSchedules, NoCreate: true},
+	{Cmd: "events", Type: "ScheduleEntry", Group: msg.GroupCore, Summary: msg.HelpEvents, Parent: "schedule",
 		Create: []cli.Flag{
-			{Name: "starts-at", Arg: "horodate", Help: "Début (ISO 8601)."},
-			{Name: "ends-at", Arg: "horodate", Help: "Fin."},
-			{Name: "all-day", Help: "Journée entière."},
-			{Name: "location", Arg: "lieu", Help: "Lieu."},
+			{Name: "starts-at", Arg: "horodate", Help: msg.FlagEventsStartsAt},
+			{Name: "ends-at", Arg: "horodate", Help: msg.FlagEventsEndsAt},
+			{Name: "all-day", Help: msg.FlagEventsAllDay},
+			{Name: "location", Arg: "lieu", Help: msg.FlagEventsLocation},
 		}},
-	{Cmd: "forwards", Type: "InboxForward", Group: "Communication", Summary: "Emails entrants du projet.", Parent: "inbox",
+	{Cmd: "forwards", Type: "InboxForward", Group: msg.GroupCommunication, Summary: msg.HelpForwards, Parent: "inbox",
 		Create: []cli.Flag{
-			{Name: "from-email", Arg: "email", Help: "Expéditeur."},
-			{Name: "subject", Arg: "objet", Help: "Objet."},
+			{Name: "from-email", Arg: "email", Help: msg.FlagForwardsFromEmail},
+			{Name: "subject", Arg: "objet", Help: msg.FlagForwardsSubject},
 		}},
-	{Cmd: "hillcharts", Type: "HillChartSnapshot", Group: "Core", Summary: "Instantanés de Hill Chart.", NoCreate: true},
-	{Cmd: "comments", Type: "Comment", Group: "Communication", Summary: "Commentaires de la spine (sur tout recordable).", Parent: "recording",
-		Create: []cli.Flag{{Name: "body", Arg: "html", Help: "Corps du commentaire."}}},
-	{Cmd: "timesheets", Type: "Timesheet", Group: "Scheduling & Time", Summary: "Heures pointées (facturable/bénévole).", Parent: "projet",
+	{Cmd: "hillcharts", Type: "HillChartSnapshot", Group: msg.GroupCore, Summary: msg.HelpHillcharts, NoCreate: true},
+	{Cmd: "comments", Type: "Comment", Group: msg.GroupCommunication, Summary: msg.HelpComments, Parent: "recording",
+		Create: []cli.Flag{{Name: "body", Arg: "html", Help: msg.FlagCommentsBody}}},
+	{Cmd: "timesheets", Type: "Timesheet", Group: msg.GroupSchedulingTime, Summary: msg.HelpTimesheets, Parent: "projet",
 		Create: []cli.Flag{
-			{Name: "worked-on", Arg: "date", Help: "Jour travaillé."},
-			{Name: "hours", Arg: "n", Help: "Heures."},
-			{Name: "billable", Help: "Facturable."},
-			{Name: "description", Arg: "texte", Help: "Description."},
-			{Name: "phase", Arg: "phase", Help: "Phase du projet."},
+			{Name: "worked-on", Arg: "date", Help: msg.FlagTimesheetsWorkedOn},
+			{Name: "hours", Arg: "n", Help: msg.FlagTimesheetsHours},
+			{Name: "billable", Help: msg.FlagTimesheetsBillable},
+			{Name: "description", Arg: "texte", Help: msg.FlagDescription},
+			{Name: "phase", Arg: "phase", Help: msg.FlagTimesheetsPhase},
 		}},
 
 	// ── Contacto (ISC-413) ──
-	{Cmd: "contacts", Type: "Contact", Group: "Lentilles", Summary: "Contacts du CRM (vivent au QG du hub).",
-		Create: []cli.Flag{{Name: "kind", Arg: "genre", Help: "person|organization (défaut person)."}}},
+	{Cmd: "contacts", Type: "Contact", Group: msg.GroupLentilles, Summary: msg.HelpContacts,
+		Create: []cli.Flag{{Name: "kind", Arg: "genre", Help: msg.FlagContactsKind}}},
 
 	// ── Academio (ISC-415, la part recordable) ──
-	{Cmd: "participant-lists", Type: "ParticipantList", Group: "Lentilles", Summary: "Listes de participants d'une activité.", NoCreate: true},
-	{Cmd: "participant-categories", Type: "ParticipantCategory", Group: "Lentilles", Summary: "Tarifs/quotas d'une liste de participants.", Parent: "participant-list",
+	{Cmd: "participant-lists", Type: "ParticipantList", Group: msg.GroupLentilles, Summary: msg.HelpParticipantLists, NoCreate: true},
+	{Cmd: "participant-categories", Type: "ParticipantCategory", Group: msg.GroupLentilles, Summary: msg.HelpParticipantCategories, Parent: "participant-list",
 		Create: []cli.Flag{
-			{Name: "label", Arg: "libellé", Help: "Libellé du tarif."},
-			{Name: "price-cents", Arg: "n", Help: "Prix en centimes."},
-			{Name: "quota", Arg: "n", Help: "Quota de places."},
+			{Name: "label", Arg: "libellé", Help: msg.FlagParticipantCategoriesLabel},
+			{Name: "price-cents", Arg: "n", Help: msg.FlagParticipantCategoriesPriceCents},
+			{Name: "quota", Arg: "n", Help: msg.FlagParticipantCategoriesQuota},
 		}},
-	{Cmd: "participants", Type: "Participant", Group: "Lentilles", Summary: "Inscriptions d'une activité.", Parent: "participant-list",
+	{Cmd: "participants", Type: "Participant", Group: msg.GroupLentilles, Summary: msg.HelpParticipants, Parent: "participant-list",
 		Create: []cli.Flag{
-			{Name: "contact-id", Arg: "id", Help: "Le contact inscrit (obligatoire)."},
-			{Name: "participant-category-id", Arg: "id", Help: "Le tarif choisi."},
-			{Name: "status", Arg: "statut", Help: "registered|waitlist|cancelled (défaut registered)."},
+			{Name: "contact-id", Arg: "id", Help: msg.FlagParticipantsContactId},
+			{Name: "participant-category-id", Arg: "id", Help: msg.FlagParticipantsParticipantCategoryId},
+			{Name: "status", Arg: "statut", Help: msg.FlagParticipantsStatus},
 		}},
-	{Cmd: "training-documents", Type: "TrainingDocument", Group: "Lentilles", Summary: "Documents de formation d'une séance.", Parent: "projet",
+	{Cmd: "training-documents", Type: "TrainingDocument", Group: msg.GroupLentilles, Summary: msg.HelpTrainingDocuments, Parent: "projet",
 		Create: []cli.Flag{
-			{Name: "name", Arg: "nom", Help: "Nom du document."},
-			{Name: "schedule-entry-id", Arg: "id", Help: "La séance liée."},
+			{Name: "name", Arg: "nom", Help: msg.FlagTrainingDocumentsName},
+			{Name: "schedule-entry-id", Arg: "id", Help: msg.FlagTrainingDocumentsScheduleEntryId},
 		}},
-	{Cmd: "session-feedbacks", Type: "SessionFeedback", Group: "Lentilles", Summary: "Retours de séance.", Parent: "projet",
+	{Cmd: "session-feedbacks", Type: "SessionFeedback", Group: msg.GroupLentilles, Summary: msg.HelpSessionFeedbacks, Parent: "projet",
 		Create: []cli.Flag{
-			{Name: "schedule-entry-id", Arg: "id", Help: "La séance."},
-			{Name: "contact-id", Arg: "id", Help: "Le participant."},
-			{Name: "rating", Arg: "n", Help: "Note."},
-			{Name: "comment", Arg: "texte", Help: "Commentaire."},
+			{Name: "schedule-entry-id", Arg: "id", Help: msg.FlagSessionFeedbacksScheduleEntryId},
+			{Name: "contact-id", Arg: "id", Help: msg.FlagParticipant},
+			{Name: "rating", Arg: "n", Help: msg.FlagSessionFeedbacksRating},
+			{Name: "comment", Arg: "texte", Help: msg.FlagSessionFeedbacksComment},
 		}},
 
 	// ── Conceptio (ISC-416, la part recordable) ──
-	{Cmd: "palettes", Type: "Palette", Group: "Lentilles", Summary: "Palettes végétales des designs.", NoCreate: true},
-	{Cmd: "palette-items", Type: "PaletteItem", Group: "Lentilles", Summary: "Plantes d'une palette (strate, quantité, prix, conduite).", Parent: "palette",
+	{Cmd: "palettes", Type: "Palette", Group: msg.GroupLentilles, Summary: msg.HelpPalettes, NoCreate: true},
+	{Cmd: "palette-items", Type: "PaletteItem", Group: msg.GroupLentilles, Summary: msg.HelpPaletteItems, Parent: "palette",
 		Create: []cli.Flag{
-			{Name: "name", Arg: "latin", Help: "Nom latin."},
-			{Name: "common-name", Arg: "nom", Help: "Nom commun."},
-			{Name: "strata", Arg: "strate", Help: "Strate (canopy, shrub…)."},
-			{Name: "quantity", Arg: "n", Help: "Quantité."},
-			{Name: "unit-price-cents", Arg: "n", Help: "Prix unitaire en centimes."},
-			{Name: "external-variety-id", Arg: "id", Help: "Variété du catalogue Planto."},
+			{Name: "name", Arg: "latin", Help: msg.FlagNomLatin},
+			{Name: "common-name", Arg: "nom", Help: msg.FlagPaletteItemsCommonName},
+			{Name: "strata", Arg: "strate", Help: msg.FlagPaletteItemsStrata},
+			{Name: "quantity", Arg: "n", Help: msg.FlagQuantite},
+			{Name: "unit-price-cents", Arg: "n", Help: msg.FlagUnitPriceCents},
+			{Name: "external-variety-id", Arg: "id", Help: msg.FlagPaletteItemsExternalVarietyId},
 		}},
-	{Cmd: "concepts", Type: "Concept", Group: "Lentilles", Summary: "Scènes de design (fond de plan, calibration).", Parent: "projet design",
+	{Cmd: "concepts", Type: "Concept", Group: msg.GroupLentilles, Summary: msg.HelpConcepts, Parent: "projet design",
 		Create: []cli.Flag{
-			{Name: "width-m", Arg: "m", Help: "Largeur en mètres."},
-			{Name: "height-m", Arg: "m", Help: "Hauteur en mètres."},
+			{Name: "width-m", Arg: "m", Help: msg.FlagConceptsWidthM},
+			{Name: "height-m", Arg: "m", Help: msg.FlagConceptsHeightM},
 		}},
-	{Cmd: "markers", Type: "PlantMarker", Group: "Lentilles", Summary: "Marqueurs de plantation d'un plan.", Parent: "concept",
+	{Cmd: "markers", Type: "PlantMarker", Group: msg.GroupLentilles, Summary: msg.HelpMarkers, Parent: "concept",
 		Create: []cli.Flag{
-			{Name: "x", Arg: "0..1", Help: "Position X normalisée."},
-			{Name: "y", Arg: "0..1", Help: "Position Y normalisée."},
-			{Name: "species-name", Arg: "nom", Help: "Espèce."},
-			{Name: "palette-item-id", Arg: "id", Help: "La plante de la palette."},
+			{Name: "x", Arg: "0..1", Help: msg.FlagMarkersX},
+			{Name: "y", Arg: "0..1", Help: msg.FlagMarkersY},
+			{Name: "species-name", Arg: "nom", Help: msg.FlagMarkersSpeciesName},
+			{Name: "palette-item-id", Arg: "id", Help: msg.FlagMarkersPaletteItemId},
 		}},
-	{Cmd: "quotes", Type: "Quote", Group: "Lentilles", Summary: "Devis d'un design — les totaux se calculent des lignes, jamais posés.", Parent: "projet design",
+	{Cmd: "quotes", Type: "Quote", Group: msg.GroupLentilles, Summary: msg.HelpQuotes, Parent: "projet design",
 		Create: []cli.Flag{
-			{Name: "vat-rate", Arg: "taux", Help: "Taux de TVA (défaut 21)."},
-			{Name: "valid-until", Arg: "date", Help: "Validité."},
+			{Name: "vat-rate", Arg: "taux", Help: msg.FlagQuotesVatRate},
+			{Name: "valid-until", Arg: "date", Help: msg.FlagQuotesValidUntil},
 		}},
-	{Cmd: "quote-lines", Type: "QuoteLine", Group: "Lentilles", Summary: "Lignes de devis.", Parent: "quote",
+	{Cmd: "quote-lines", Type: "QuoteLine", Group: msg.GroupLentilles, Summary: msg.HelpQuoteLines, Parent: "quote",
 		Create: []cli.Flag{
-			{Name: "description", Arg: "texte", Help: "Description."},
-			{Name: "quantity", Arg: "n", Help: "Quantité."},
-			{Name: "unit", Arg: "unité", Help: "Unité."},
-			{Name: "unit-price-cents", Arg: "n", Help: "Prix unitaire en centimes."},
+			{Name: "description", Arg: "texte", Help: msg.FlagDescription},
+			{Name: "quantity", Arg: "n", Help: msg.FlagQuantite},
+			{Name: "unit", Arg: "unité", Help: msg.FlagQuoteLinesUnit},
+			{Name: "unit-price-cents", Arg: "n", Help: msg.FlagUnitPriceCents},
 		}},
-	{Cmd: "plant-records", Type: "PlantRecord", Group: "Lentilles", Summary: "Suivi de vie des plantations.", Parent: "projet design",
+	{Cmd: "plant-records", Type: "PlantRecord", Group: msg.GroupLentilles, Summary: msg.HelpPlantRecords, Parent: "projet design",
 		Create: []cli.Flag{
-			{Name: "status", Arg: "statut", Help: "alive|dead|replaced (défaut alive)."},
-			{Name: "plant-marker-id", Arg: "id", Help: "Le marqueur suivi."},
+			{Name: "status", Arg: "statut", Help: msg.FlagPlantRecordsStatus},
+			{Name: "plant-marker-id", Arg: "id", Help: msg.FlagPlantRecordsPlantMarkerId},
 		}},
-	{Cmd: "interventions", Type: "Intervention", Group: "Lentilles", Summary: "Interventions sur une plantation.", Parent: "projet design",
+	{Cmd: "interventions", Type: "Intervention", Group: msg.GroupLentilles, Summary: msg.HelpInterventions, Parent: "projet design",
 		Create: []cli.Flag{
-			{Name: "happened-on", Arg: "date", Help: "Date."},
-			{Name: "kind", Arg: "genre", Help: "Genre d'intervention."},
-			{Name: "notes", Arg: "texte", Help: "Notes."},
+			{Name: "happened-on", Arg: "date", Help: msg.FlagDate},
+			{Name: "kind", Arg: "genre", Help: msg.FlagInterventionsKind},
+			{Name: "notes", Arg: "texte", Help: msg.FlagNotes},
 		}},
 }
 
@@ -190,28 +191,28 @@ func buildTypeCommand(spec typeSpec) *cli.Command {
 	}
 	cmd.Sub = append(cmd.Sub,
 		&cli.Command{
-			Name: "list", Summary: fmt.Sprintf("Liste (type %s) — filtres --project, --parent.", spec.Type),
-			Flags:  []cli.Flag{{Name: "parent", Arg: "id", Help: "Restreint aux enfants de ce recording."}},
+			Name: "list", Summary: fmt.Sprintf(msg.HelpSpineList, spec.Type),
+			Flags:  []cli.Flag{{Name: "parent", Arg: "id", Help: msg.FlagSpineListParent}},
 			APIOps: []string{"GET /recordings"},
 			Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return listRecordings(c, spec, args) },
 		},
 		&cli.Command{
-			Name: "show", Summary: "Détail d'un recording.", ArgSpec: "<id>", MinArgs: 1,
+			Name: "show", Summary: msg.HelpSpineShow, ArgSpec: "<id>", MinArgs: 1,
 			APIOps: []string{"GET /recordings/{id}"},
 			Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return showRecording(c, spec, args[0]) },
 		},
 	)
 	if !spec.NoCreate {
-		parentHelp := "Recording parent (contenant)."
+		parentHelp := msg.FlagSpineParent
 		if spec.Parent != "" {
-			parentHelp = "Recording parent — ici : " + spec.Parent + "."
+			parentHelp = fmt.Sprintf(msg.FlagSpineParentIn, spec.Parent)
 		}
 		addFlags := append([]cli.Flag{
-			{Name: "project", Short: "p", Arg: "id", Help: "Le projet (obligatoire sauf contacts)."},
+			{Name: "project", Short: "p", Arg: "id", Help: msg.FlagSpineProject},
 			{Name: "parent", Arg: "id", Help: parentHelp},
 		}, spec.Create...)
 		cmd.Sub = append(cmd.Sub, &cli.Command{
-			Name: "add", Summary: "Crée un " + spec.Type + ".", ArgSpec: "<titre>", MinArgs: 0,
+			Name: "add", Summary: fmt.Sprintf(msg.HelpSpineAdd, spec.Type), ArgSpec: "<titre>", MinArgs: 0,
 			Flags:  addFlags,
 			APIOps: []string{"POST /recordings"},
 			Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return createRecording(c, spec, args) },
@@ -219,18 +220,18 @@ func buildTypeCommand(spec typeSpec) *cli.Command {
 	}
 	cmd.Sub = append(cmd.Sub,
 		&cli.Command{
-			Name: "edit", Summary: "Modifie titre, corps, échéance, complétion.", ArgSpec: "<id>", MinArgs: 1,
+			Name: "edit", Summary: msg.HelpSpineEdit, ArgSpec: "<id>", MinArgs: 1,
 			Flags: []cli.Flag{
-				{Name: "title", Arg: "titre", Help: "Nouveau titre."},
-				{Name: "body", Arg: "html", Help: "Nouveau corps."},
-				{Name: "due-on", Arg: "date", Help: "Échéance (tâches)."},
-				{Name: "completed", Arg: "bool", Help: "true|false — passe par Todo#complete!, jamais un booléen nu."},
+				{Name: "title", Arg: "titre", Help: msg.FlagSpineEditTitle},
+				{Name: "body", Arg: "html", Help: msg.FlagSpineEditBody},
+				{Name: "due-on", Arg: "date", Help: msg.FlagSpineEditDueOn},
+				{Name: "completed", Arg: "bool", Help: msg.FlagSpineEditCompleted},
 			},
 			APIOps: []string{"PATCH /recordings/{id}"},
 			Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return editRecording(c, args) },
 		},
 		&cli.Command{
-			Name: "trash", Summary: "Met à la corbeille (restaurable 30 j). Confirmation, ou --yes.", ArgSpec: "<id>", MinArgs: 1,
+			Name: "trash", Summary: msg.HelpSpineTrash, ArgSpec: "<id>", MinArgs: 1,
 			APIOps: []string{"DELETE /recordings/{id}"},
 			Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return trashRecording(c, args[0]) },
 		},
@@ -263,7 +264,7 @@ func spineGestures(spec typeSpec) []*cli.Command {
 	}
 	cmds := []*cli.Command{
 		{
-			Name: "comment", Summary: "Commente le recording.", ArgSpec: "<id> <corps html>", MinArgs: 2,
+			Name: "comment", Summary: msg.HelpSpineComment, ArgSpec: "<id> <corps html>", MinArgs: 2,
 			APIOps: []string{"POST /recordings/{id}/comments"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				client, err := c.API()
@@ -274,36 +275,36 @@ func spineGestures(spec typeSpec) []*cli.Command {
 				if err := client.Post("/recordings/"+args[0]+"/comments", map[string]any{"body": strings.Join(args[1:], " ")}, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Commentaire posté."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResCommentairePoste}, nil
 			},
 		},
-		g("boost", "Booste (réaction courte).", "POST", "/boost", func(a []string) any {
+		g("boost", msg.HelpBoost, "POST", "/boost", func(a []string) any {
 			content := "👍"
 			if len(a) > 0 {
 				content = a[0]
 			}
 			return map[string]any{"content": content}
 		}, "POST /recordings/{id}/boost"),
-		g("unboost", "Retire son boost.", "DELETE", "/boost", nil, "DELETE /recordings/{id}/boost"),
-		g("subscribe", "S'abonne aux notifications du recording.", "POST", "/subscription", nil, "POST /recordings/{id}/subscription"),
-		g("unsubscribe", "Se désabonne.", "DELETE", "/subscription", nil, "DELETE /recordings/{id}/subscription"),
-		g("read", "Marque lu.", "POST", "/read", nil, "POST /recordings/{id}/read"),
-		g("bookmark", "Pose un marque-page (idempotent).", "POST", "/bookmark", nil, "POST /recordings/{id}/bookmark"),
-		g("unbookmark", "Retire son marque-page.", "DELETE", "/bookmark", nil, "DELETE /recordings/{id}/bookmark"),
-		g("archive", "Archive (avec les enfants).", "POST", "/archive", nil, "POST /recordings/{id}/archive"),
-		g("restore", "Restaure depuis l'archive ou la corbeille.", "POST", "/restore", nil, "POST /recordings/{id}/restore"),
+		g("unboost", msg.HelpUnboost, "DELETE", "/boost", nil, "DELETE /recordings/{id}/boost"),
+		g("subscribe", msg.HelpSubscribe, "POST", "/subscription", nil, "POST /recordings/{id}/subscription"),
+		g("unsubscribe", msg.HelpUnsubscribe, "DELETE", "/subscription", nil, "DELETE /recordings/{id}/subscription"),
+		g("read", msg.HelpRead, "POST", "/read", nil, "POST /recordings/{id}/read"),
+		g("bookmark", msg.HelpBookmark, "POST", "/bookmark", nil, "POST /recordings/{id}/bookmark"),
+		g("unbookmark", msg.HelpUnbookmark, "DELETE", "/bookmark", nil, "DELETE /recordings/{id}/bookmark"),
+		g("archive", msg.HelpArchive, "POST", "/archive", nil, "POST /recordings/{id}/archive"),
+		g("restore", msg.HelpRestore, "POST", "/restore", nil, "POST /recordings/{id}/restore"),
 	}
 	// move/copy : changer de projet — l'atterrissage se fait dans le même outil.
 	moveCopy := func(name, verb, path string) *cli.Command {
 		return &cli.Command{
-			Name: name, Summary: verb + " vers un autre projet (même outil, descendance comprise).",
+			Name: name, Summary: fmt.Sprintf(msg.HelpMoveCopy, verb),
 			ArgSpec: "<id> --to <project_id>", MinArgs: 1,
-			Flags:  []cli.Flag{{Name: "to", Arg: "project_id", Help: "Le projet cible."}},
+			Flags:  []cli.Flag{{Name: "to", Arg: "project_id", Help: msg.FlagSpineMoveTo}},
 			APIOps: []string{strings.ToUpper(pathVerb(name)) + " /recordings/{id}/" + path},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				to, rest := cli.FlagValue(args, "to")
 				if to == "" || len(rest) == 0 {
-					return nil, cli.Usagef("usage : … %s <id> --to <project_id>", name)
+					return nil, cli.Usagef(msg.UsageMoveCopy, name)
 				}
 				client, err := c.API()
 				if err != nil {
@@ -321,11 +322,11 @@ func spineGestures(spec typeSpec) []*cli.Command {
 			},
 		}
 	}
-	cmds = append(cmds, moveCopy("move", "Déplace", "move"), moveCopy("copy", "Copie", "copy"))
+	cmds = append(cmds, moveCopy("move", msg.VerbMove, "move"), moveCopy("copy", msg.VerbCopy, "copy"))
 
 	if spec.Type == "Todo" || spec.Type == "Card" {
 		cmds = append(cmds, &cli.Command{
-			Name: "assign", Summary: "Assigne — REMPLACE la liste des assignés (idempotent, membres du projet seulement).",
+			Name: "assign", Summary: msg.HelpAssign,
 			ArgSpec: "<id> <user_id…>", MinArgs: 1,
 			APIOps: []string{"PATCH /recordings/{id}/assignees"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -337,20 +338,20 @@ func spineGestures(spec typeSpec) []*cli.Command {
 				if err := client.Patch("/recordings/"+args[0]+"/assignees", map[string]any{"user_ids": args[1:]}, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Assignés remplacés."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResAssignesRemplaces}, nil
 			},
 		})
 	}
 	if spec.Type == "Card" {
 		cmds = append(cmds, &cli.Command{
-			Name: "move-column", Summary: "Déplace la carte de colonne — entrer dans done horodate la complétion.",
+			Name: "move-column", Summary: msg.HelpMoveColumn,
 			ArgSpec: "<id> --to <column_recording_id>", MinArgs: 1,
-			Flags:  []cli.Flag{{Name: "to", Arg: "id", Help: "Le recording de la colonne cible."}},
+			Flags:  []cli.Flag{{Name: "to", Arg: "id", Help: msg.FlagMoveColumnTo}},
 			APIOps: []string{"PATCH /recordings/{id}/column"},
 			Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 				to, rest := cli.FlagValue(args, "to")
 				if to == "" || len(rest) == 0 {
-					return nil, cli.Usagef("usage : … move-column <id> --to <column_recording_id>")
+					return nil, cli.Usagef(msg.UsageMoveColumn)
 				}
 				client, err := c.API()
 				if err != nil {
@@ -360,7 +361,7 @@ func spineGestures(spec typeSpec) []*cli.Command {
 				if err := client.Patch("/recordings/"+rest[0]+"/column", map[string]any{"column_id": to}, &out); err != nil {
 					return nil, err
 				}
-				return &cli.Result{Data: out, Summary: "Carte déplacée."}, nil
+				return &cli.Result{Data: out, Summary: msg.ResCarteDeplacee}, nil
 			},
 		})
 	}
@@ -414,12 +415,12 @@ func listRecordings(c *cli.Ctx, spec typeSpec, args []string) (*cli.Result, erro
 	for _, r := range items {
 		rows = append(rows, []string{str(r["id"]), str(r["title"]), str(r["status"]), str(r["bucket_id"])})
 	}
-	crumbs := []cli.Crumb{{Action: "voir un élément", Cmd: "terranova " + spec.Cmd + " show <id>"}}
+	crumbs := []cli.Crumb{{Action: msg.CrumbVoirUnElement, Cmd: "terranova " + spec.Cmd + " show <id>"}}
 	if !spec.NoCreate {
-		crumbs = append(crumbs, cli.Crumb{Action: "en créer un", Cmd: "terranova " + spec.Cmd + " add <titre> --project <id>"})
+		crumbs = append(crumbs, cli.Crumb{Action: msg.CrumbEnCreerUn, Cmd: "terranova " + spec.Cmd + " add <titre> --project <id>"})
 	}
-	return &cli.Result{Data: items, Headers: []string{"ID", "TITRE", "STATUT", "PROJET"}, Rows: rows,
-		Summary: fmt.Sprintf("%d %s.", len(items), spec.Cmd), Crumbs: crumbs}, nil
+	return &cli.Result{Data: items, Headers: msg.HeadersRecordingList, Rows: rows,
+		Summary: fmt.Sprintf(msg.ResListCount, len(items), spec.Cmd), Crumbs: crumbs}, nil
 }
 
 func showRecording(c *cli.Ctx, spec typeSpec, id string) (*cli.Result, error) {
@@ -435,8 +436,8 @@ func showRecording(c *cli.Ctx, spec typeSpec, id string) (*cli.Result, error) {
 	}
 	return &cli.Result{Data: out.Recording,
 		Crumbs: []cli.Crumb{
-			{Action: "commenter", Cmd: "terranova " + spec.Cmd + " comment " + id + " <corps>"},
-			{Action: "s'abonner", Cmd: "terranova " + spec.Cmd + " subscribe " + id},
+			{Action: msg.CrumbCommenter, Cmd: "terranova " + spec.Cmd + " comment " + id + " <corps>"},
+			{Action: msg.CrumbSAbonner, Cmd: "terranova " + spec.Cmd + " subscribe " + id},
 		}}, nil
 }
 
@@ -474,7 +475,7 @@ func createRecording(c *cli.Ctx, spec typeSpec, args []string) (*cli.Result, err
 		body["title"] = strings.Join(args, " ")
 	}
 	if spec.Type != "Contact" && project == "" {
-		return nil, cli.Usagef("--project est obligatoire pour créer un %s", spec.Type)
+		return nil, cli.Usagef(msg.UsageProjectRequired, spec.Type)
 	}
 	client, err := c.API()
 	if err != nil {
@@ -484,7 +485,7 @@ func createRecording(c *cli.Ctx, spec typeSpec, args []string) (*cli.Result, err
 	if spec.Type == "Upload" {
 		file := str(body["file"])
 		if file == "" {
-			return nil, cli.Usagef("--file est obligatoire pour un upload")
+			return nil, cli.Usagef(msg.UsageFileRequired)
 		}
 		delete(body, "file")
 		fields := map[string]string{}
@@ -495,15 +496,15 @@ func createRecording(c *cli.Ctx, spec typeSpec, args []string) (*cli.Result, err
 		if err := client.Upload("/recordings", fields, "file", file, &out); err != nil {
 			return nil, err
 		}
-		return &cli.Result{Data: out, Summary: "Fichier téléversé."}, nil
+		return &cli.Result{Data: out, Summary: msg.ResFichierTeleverse}, nil
 	}
 	var out map[string]any
 	if err := client.Post("/recordings", body, &out); err != nil {
 		return nil, err
 	}
 	id := str(dig(anyMap(out), "recording", "id"))
-	return &cli.Result{Data: out, Summary: spec.Type + " créé.",
-		Crumbs: []cli.Crumb{{Action: "le voir", Cmd: "terranova " + spec.Cmd + " show " + id}}}, nil
+	return &cli.Result{Data: out, Summary: fmt.Sprintf(msg.ResCreatedType, spec.Type),
+		Crumbs: []cli.Crumb{{Action: msg.CrumbLeVoir, Cmd: "terranova " + spec.Cmd + " show " + id}}}, nil
 }
 
 func editRecording(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -518,7 +519,7 @@ func editRecording(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 	}
 	if len(body) == 0 {
-		return nil, cli.Usagef("rien à modifier — passe --title, --body, --due-on ou --completed")
+		return nil, cli.Usagef(msg.UsageNothingToEditSpine)
 	}
 	client, err := c.API()
 	if err != nil {
@@ -528,11 +529,11 @@ func editRecording(c *cli.Ctx, args []string) (*cli.Result, error) {
 	if err := client.Patch("/recordings/"+id, body, &out); err != nil {
 		return nil, err
 	}
-	return &cli.Result{Data: out, Summary: "Modifié."}, nil
+	return &cli.Result{Data: out, Summary: msg.ResModifie}, nil
 }
 
 func trashRecording(c *cli.Ctx, id string) (*cli.Result, error) {
-	if err := confirm(c, fmt.Sprintf("Mettre le recording %s à la corbeille ?", id)); err != nil {
+	if err := confirm(c, fmt.Sprintf(msg.AskTrashRecording, id)); err != nil {
 		return nil, err
 	}
 	client, err := c.API()
@@ -543,23 +544,23 @@ func trashRecording(c *cli.Ctx, id string) (*cli.Result, error) {
 	if err := client.Delete("/recordings/"+id, &out); err != nil {
 		return nil, err
 	}
-	return &cli.Result{Data: out, Summary: "À la corbeille (restaurable 30 jours).",
-		Crumbs: []cli.Crumb{{Action: "restaurer", Cmd: "terranova recordings restore " + id}}}, nil
+	return &cli.Result{Data: out, Summary: msg.ResALaCorbeilleRestaurable30,
+		Crumbs: []cli.Crumb{{Action: msg.CrumbRestaurer, Cmd: "terranova recordings restore " + id}}}, nil
 }
 
 // buildRecordingsCommand — le parcours générique par type/statut (ISC-406).
 func buildRecordingsCommand() *cli.Command {
-	generic := typeSpec{Cmd: "recordings", Type: "", Summary: "La spine brute : tout recordable, par type et statut."}
+	generic := typeSpec{Cmd: "recordings", Type: "", Summary: msg.HelpRecordings}
 	cmd := &cli.Command{
-		Name: "recordings", Group: "Search & Browse",
-		Summary: "La spine brute : parcourir par type, corbeille/archive/restauration, déplacer/copier.",
+		Name: "recordings", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpRecordingsBrowse,
 		APIOps:  []string{"GET /recordings", "GET /recordings/{id}", "PATCH /recordings/{id}", "DELETE /recordings/{id}"},
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Liste — filtres --type, --project, --assigned-to.",
+				Name: "list", Summary: msg.HelpRecordingsList,
 				Flags: []cli.Flag{
-					{Name: "type", Arg: "Type", Help: "Un des 40 recordable_type (Todo, Message…)."},
-					{Name: "assigned-to", Arg: "user_id", Help: "Tâches assignées à cette personne."},
+					{Name: "type", Arg: "Type", Help: msg.FlagRecordingsListType},
+					{Name: "assigned-to", Arg: "user_id", Help: msg.FlagRecordingsListAssignedTo},
 				},
 				APIOps: []string{"GET /recordings"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -589,12 +590,12 @@ func buildRecordingsCommand() *cli.Command {
 					for _, r := range page.Recordings {
 						rows = append(rows, []string{str(r["id"]), str(r["recordable_type"]), str(r["title"]), str(r["status"])})
 					}
-					return &cli.Result{Data: page.Recordings, Headers: []string{"ID", "TYPE", "TITRE", "STATUT"}, Rows: rows,
-						Summary: fmt.Sprintf("%d recordings (page de 100 max — --jq et offset pour plus).", len(page.Recordings))}, nil
+					return &cli.Result{Data: page.Recordings, Headers: msg.HeadersRecordingKinds, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResRecordingsPage, len(page.Recordings))}, nil
 				},
 			},
 			{
-				Name: "show", Summary: "Détail d'un recording, quel que soit son type.", ArgSpec: "<id>", MinArgs: 1,
+				Name: "show", Summary: msg.HelpRecordingsShow, ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"GET /recordings/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					return showRecording(c, generic, args[0])
@@ -604,7 +605,7 @@ func buildRecordingsCommand() *cli.Command {
 	}
 	cmd.Sub = append(cmd.Sub, spineGestures(generic)...)
 	cmd.Sub = append(cmd.Sub, &cli.Command{
-		Name: "trash", Summary: "Corbeille (confirmation, ou --yes).", ArgSpec: "<id>", MinArgs: 1,
+		Name: "trash", Summary: msg.HelpRecordingsTrash, ArgSpec: "<id>", MinArgs: 1,
 		APIOps: []string{"DELETE /recordings/{id}"},
 		Run:    func(c *cli.Ctx, args []string) (*cli.Result, error) { return trashRecording(c, args[0]) },
 	})
@@ -624,14 +625,14 @@ func confirm(c *cli.Ctx, question string) error {
 		return nil
 	}
 	if c.Flags.Agent || !c.IsTTY {
-		return cli.Usagef("geste destructif : ajoute --yes pour confirmer (aucun prompt en mode agent)")
+		return cli.Usagef(msg.UsageDestructiveNeedsYes)
 	}
-	fmt.Printf("%s (oui/non) ", question)
+	fmt.Printf(msg.AskOuiNon, question)
 	var answer string
 	fmt.Scanln(&answer)
 	answer = strings.ToLower(strings.TrimSpace(answer))
 	if answer != "oui" && answer != "o" && answer != "yes" && answer != "y" {
-		return fmt.Errorf("annulé")
+		return fmt.Errorf(msg.ErrCancelled)
 	}
 	return nil
 }

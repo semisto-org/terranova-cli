@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // Les skills voyagent DANS le binaire (ISC-386) : pas de fichier à télécharger,
@@ -19,42 +20,42 @@ const skillsRoot = "skills_embedded"
 
 func init() {
 	cli.Register(&cli.Command{
-		Name: "skill", Group: "Additional",
-		Summary: "Skills agent embarqués : lister, afficher, installer (ISC-386).",
+		Name: "skill", Group: msg.GroupAdditional,
+		Summary: msg.HelpSkill,
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Les skills embarqués dans ce binaire.",
+				Name: "list", Summary: msg.HelpSkillList,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					names, err := skillNames()
 					if err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: names, Summary: fmt.Sprintf("%d skill(s) embarqués.", len(names)),
-						Crumbs: []cli.Crumb{{Action: "installer", Cmd: "terranova skill install"}}}, nil
+					return &cli.Result{Data: names, Summary: fmt.Sprintf(msg.ResSkillCount, len(names)),
+						Crumbs: []cli.Crumb{{Action: msg.CrumbInstaller, Cmd: "terranova skill install"}}}, nil
 				},
 			},
 			{
-				Name: "show", Summary: "Affiche un skill.", ArgSpec: "<nom>", MinArgs: 1,
+				Name: "show", Summary: msg.HelpSkillShow, ArgSpec: "<nom>", MinArgs: 1,
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					raw, err := embeddedSkills.ReadFile(skillsRoot + "/" + args[0] + "/SKILL.md")
 					if err != nil {
-						return nil, cli.Usagef("skill inconnu : %s (vois `terranova skill list`)", args[0])
+						return nil, cli.Usagef(msg.UsageUnknownSkill, args[0])
 					}
 					fmt.Print(string(raw))
 					return nil, nil
 				},
 			},
 			{
-				Name: "install", Summary: "Pose les skills dans ~/.claude/skills/ (ou --dir <chemin>).",
-				Flags: []cli.Flag{{Name: "dir", Arg: "chemin", Help: "Destination (défaut ~/.claude/skills)."}},
+				Name: "install", Summary: msg.HelpSkillInstall,
+				Flags: []cli.Flag{{Name: "dir", Arg: "chemin", Help: msg.FlagSkillInstallDir}},
 				Run:   runSkillInstall,
 			},
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "setup", Group: "Auth & Config",
-		Summary: "Installe le plugin agent : claude ou codex (ISC-387).",
+		Name: "setup", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpSetup,
 		ArgSpec: "<claude|codex>", MinArgs: 1,
 		Run: runSetup,
 	})
@@ -102,7 +103,7 @@ func runSkillInstall(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 		installed = append(installed, dest)
 	}
-	return &cli.Result{Data: installed, Summary: fmt.Sprintf("%d skill(s) posés dans %s.", len(installed), dir)}, nil
+	return &cli.Result{Data: installed, Summary: fmt.Sprintf(msg.ResSkillsInstalled, len(installed), dir)}, nil
 }
 
 func runSetup(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -116,5 +117,5 @@ func runSetup(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 		return runSkillInstall(c, []string{"--dir", filepath.Join(home, ".codex", "skills")})
 	}
-	return nil, cli.Usagef("cible inconnue : %s (claude|codex)", args[0])
+	return nil, cli.Usagef(msg.UsageUnknownSetupTarget, args[0])
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/semisto-org/terranova-cli/internal/cli"
 	"github.com/semisto-org/terranova-cli/internal/commands"
 	"github.com/semisto-org/terranova-cli/internal/config"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 	"github.com/semisto-org/terranova-cli/internal/output"
 )
 
@@ -48,7 +49,7 @@ func run(args []string) int {
 
 	// Aide : racine, commande, ou structurée pour agents.
 	if cmd == nil && len(rest) > 0 && !flags.Help {
-		output.PrintError(flags, fmt.Sprintf("commande inconnue : %s — `terranova --help` liste la surface", rest[0]), nil)
+		output.PrintError(flags, fmt.Sprintf(msg.ErrUnknownCommand, rest[0]), nil)
 		return 2
 	}
 	if flags.Help || cmd == nil || (cmd.Run == nil && len(cmdArgs) == 0) {
@@ -64,11 +65,11 @@ func run(args []string) int {
 		return 0
 	}
 	if cmd.Run == nil {
-		output.PrintError(flags, fmt.Sprintf("sous-commande inconnue : %s — `terranova %s --help`", cmdArgs[0], pathOf(rest, cmdArgs)), nil)
+		output.PrintError(flags, fmt.Sprintf(msg.ErrUnknownSubcommand, cmdArgs[0], pathOf(rest, cmdArgs)), nil)
 		return 2
 	}
 	if len(cmdArgs) < cmd.MinArgs {
-		output.PrintError(flags, fmt.Sprintf("usage : terranova %s %s", pathOf(rest, cmdArgs), cmd.ArgSpec), nil)
+		output.PrintError(flags, fmt.Sprintf(msg.UsageCommand, pathOf(rest, cmdArgs), cmd.ArgSpec), nil)
 		return 2
 	}
 

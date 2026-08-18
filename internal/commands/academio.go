@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // ISC-415/436 — Academio au CLI : les activités et leurs séances, la feuille de
@@ -24,15 +25,15 @@ func init() {
 	}
 
 	cli.Register(&cli.Command{
-		Name: "academio", Group: "Lentilles",
-		Summary:   "Academy : activités, séances, présences, packs, référentiels.",
-		AgentHelp: "Scope requis : academio (grant + jeton). Les inscriptions passent par `participants add` (spine).",
+		Name: "academio", Group: msg.GroupLentilles,
+		Summary:   msg.HelpAcademio,
+		AgentHelp: msg.NotesAcademio,
 		Sub: []*cli.Command{
 			{
-				Name: "activities", Summary: "Activités : type, lieu, inscrits (même définition que le reporting).",
+				Name: "activities", Summary: msg.HelpAcademioActivities,
 				Sub: []*cli.Command{
 					{
-						Name: "list", Summary: "Liste des activités.",
+						Name: "list", Summary: msg.HelpAcademioActivitiesList,
 						APIOps: []string{"GET /academio/activities"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							client, err := c.API()
@@ -49,13 +50,13 @@ func init() {
 							for _, a := range out.Activities {
 								rows = append(rows, []string{str(a["id"]), str(a["name"]), str(a["training_type"]), str(a["training_location"]), str(a["registered_count"])})
 							}
-							return &cli.Result{Data: out.Activities, Headers: []string{"ID", "ACTIVITÉ", "TYPE", "LIEU", "INSCRITS"}, Rows: rows,
-								Summary: fmt.Sprintf("%d activité(s).", len(out.Activities)),
-								Crumbs:  []cli.Crumb{{Action: "le détail et les séances", Cmd: "terranova academio activities show <id>"}}}, nil
+							return &cli.Result{Data: out.Activities, Headers: msg.HeadersActivities, Rows: rows,
+								Summary: fmt.Sprintf(msg.ResActivityCount, len(out.Activities)),
+								Crumbs:  []cli.Crumb{{Action: msg.CrumbLeDetailEtLesSeances, Cmd: "terranova academio activities show <id>"}}}, nil
 						},
 					},
 					{
-						Name: "show", Summary: "Détail avec les séances.", ArgSpec: "<id>", MinArgs: 1,
+						Name: "show", Summary: msg.HelpAcademioActivitiesShow, ArgSpec: "<id>", MinArgs: 1,
 						APIOps: []string{"GET /academio/activities/{id}"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							client, err := c.API()
@@ -67,19 +68,19 @@ func init() {
 								return nil, err
 							}
 							return &cli.Result{Data: out,
-								Crumbs: []cli.Crumb{{Action: "la feuille de présence d'une séance", Cmd: "terranova academio attendances list --session <schedule_entry_id>"}}}, nil
+								Crumbs: []cli.Crumb{{Action: msg.CrumbLaFeuilleDePresence, Cmd: "terranova academio attendances list --session <schedule_entry_id>"}}}, nil
 						},
 					},
 				},
 			},
 			{
-				Name: "attendances", Summary: "La feuille de présence (participant × séance).",
+				Name: "attendances", Summary: msg.HelpAcademioAttendances,
 				Sub: []*cli.Command{
 					{
-						Name: "list", Summary: "Liste (— --session <id> ou --participant <id>).",
+						Name: "list", Summary: msg.HelpAcademioAttendancesList,
 						Flags: []cli.Flag{
-							{Name: "session", Arg: "id", Help: "La séance (schedule_entry_id)."},
-							{Name: "participant", Arg: "id", Help: "Le participant."},
+							{Name: "session", Arg: "id", Help: msg.FlagAcademioAttendancesListSession},
+							{Name: "participant", Arg: "id", Help: msg.FlagParticipant},
 						},
 						APIOps: []string{"GET /academio/attendances"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -103,14 +104,14 @@ func init() {
 								}
 								rows = append(rows, []string{str(a["id"]), str(a["participant_id"]), str(a["schedule_entry_id"]), present})
 							}
-							return &cli.Result{Data: out.Attendances, Headers: []string{"ID", "PARTICIPANT", "SÉANCE", "PRÉSENT"}, Rows: rows,
-								Summary: fmt.Sprintf("%d ligne(s) de présence.", len(out.Attendances))}, nil
+							return &cli.Result{Data: out.Attendances, Headers: msg.HeadersAttendances, Rows: rows,
+								Summary: fmt.Sprintf(msg.ResAttendanceCount, len(out.Attendances))}, nil
 						},
 					},
 					{
-						Name: "set", Summary: "Pose une présence (— --absent pour marquer absent). Upsert idempotent.",
+						Name: "set", Summary: msg.HelpAcademioAttendancesSet,
 						ArgSpec: "<participant_id> <schedule_entry_id>", MinArgs: 2,
-						Flags:  []cli.Flag{{Name: "absent", Help: "Marque ABSENT (présent par défaut)."}},
+						Flags:  []cli.Flag{{Name: "absent", Help: msg.FlagAcademioAttendancesSetAbsent}},
 						APIOps: []string{"POST /academio/attendances"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							absent, rest := cli.FlagBool(args, "absent")
@@ -123,11 +124,11 @@ func init() {
 							if err := client.Post("/academio/attendances", body, &out); err != nil {
 								return nil, err
 							}
-							return &cli.Result{Data: out, Summary: "Présence posée."}, nil
+							return &cli.Result{Data: out, Summary: msg.ResPresencePosee}, nil
 						},
 					},
 					{
-						Name: "remove", Summary: "Retire une ligne de présence.", ArgSpec: "<id>", MinArgs: 1,
+						Name: "remove", Summary: msg.HelpAcademioAttendancesRemove, ArgSpec: "<id>", MinArgs: 1,
 						APIOps: []string{"DELETE /academio/attendances/{id}"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							client, err := c.API()
@@ -137,17 +138,17 @@ func init() {
 							if err := client.Delete("/academio/attendances/"+args[0], nil); err != nil {
 								return nil, err
 							}
-							return &cli.Result{Data: map[string]any{"removed": args[0]}, Summary: "Retirée."}, nil
+							return &cli.Result{Data: map[string]any{"removed": args[0]}, Summary: msg.ResRetiree}, nil
 						},
 					},
 				},
 			},
 			{
-				Name: "packs", Summary: "Les packs d'une inscription.",
+				Name: "packs", Summary: msg.HelpAcademioPacks,
 				Sub: []*cli.Command{
 					{
-						Name: "list", Summary: "Liste (— --participant <id>).",
-						Flags:  []cli.Flag{{Name: "participant", Arg: "id", Help: "Le participant."}},
+						Name: "list", Summary: msg.HelpAcademioPacksList,
+						Flags:  []cli.Flag{{Name: "participant", Arg: "id", Help: msg.FlagParticipant}},
 						APIOps: []string{"GET /academio/registration_packs"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							participant, _ := cli.FlagValue(args, "participant")
@@ -161,15 +162,15 @@ func init() {
 							if err := client.Get("/academio/registration_packs"+q(map[string]string{"participant_id": participant}), &out); err != nil {
 								return nil, err
 							}
-							return &cli.Result{Data: out.Packs, Summary: fmt.Sprintf("%d pack(s).", len(out.Packs))}, nil
+							return &cli.Result{Data: out.Packs, Summary: fmt.Sprintf(msg.ResPackCount, len(out.Packs))}, nil
 						},
 					},
 					{
-						Name: "add", Summary: "Ajoute un pack (prix par défaut du pack).",
+						Name: "add", Summary: msg.HelpAcademioPacksAdd,
 						ArgSpec: "<participant_id> <training_pack_id>", MinArgs: 2,
 						Flags: []cli.Flag{
-							{Name: "quantity", Arg: "n", Help: "Quantité (défaut 1)."},
-							{Name: "price-cents", Arg: "n", Help: "Prix forcé, sinon celui du pack."},
+							{Name: "quantity", Arg: "n", Help: msg.FlagAcademioPacksAddQuantity},
+							{Name: "price-cents", Arg: "n", Help: msg.FlagAcademioPacksAddPriceCents},
 						},
 						APIOps: []string{"POST /academio/registration_packs"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -190,11 +191,11 @@ func init() {
 							if err := client.Post("/academio/registration_packs", body, &out); err != nil {
 								return nil, err
 							}
-							return &cli.Result{Data: out, Summary: "Pack ajouté."}, nil
+							return &cli.Result{Data: out, Summary: msg.ResPackAjoute}, nil
 						},
 					},
 					{
-						Name: "remove", Summary: "Retire un pack d'une inscription.", ArgSpec: "<id>", MinArgs: 1,
+						Name: "remove", Summary: msg.HelpAcademioPacksRemove, ArgSpec: "<id>", MinArgs: 1,
 						APIOps: []string{"DELETE /academio/registration_packs/{id}"},
 						Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 							client, err := c.API()
@@ -204,13 +205,13 @@ func init() {
 							if err := client.Delete("/academio/registration_packs/"+args[0], nil); err != nil {
 								return nil, err
 							}
-							return &cli.Result{Data: map[string]any{"removed": args[0]}, Summary: "Retiré."}, nil
+							return &cli.Result{Data: map[string]any{"removed": args[0]}, Summary: msg.ResRetire}, nil
 						},
 					},
 				},
 			},
 			{
-				Name: "types", Summary: "Les types de formation du hub.",
+				Name: "types", Summary: msg.HelpAcademioTypes,
 				APIOps: []string{"GET /academio/types"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -225,7 +226,7 @@ func init() {
 				},
 			},
 			{
-				Name: "locations", Summary: "Les lieux de formation du hub.",
+				Name: "locations", Summary: msg.HelpAcademioLocations,
 				APIOps: []string{"GET /academio/locations"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()

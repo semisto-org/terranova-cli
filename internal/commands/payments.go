@@ -5,20 +5,21 @@ import (
 	"net/url"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // ISC-437 — les paiements : enregistrer un encaissement depuis un script,
 // marquer payé par le geste du modèle, et répondre « qui n'a pas soldé ».
 func init() {
 	cli.Register(&cli.Command{
-		Name: "payments", Group: "Lentilles",
-		Summary: "Paiements Academy : lister, enregistrer, marquer payé, « qui n'a pas soldé ».",
+		Name: "payments", Group: msg.GroupLentilles,
+		Summary: msg.HelpPayments,
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Liste (— --status pending|paid|refunded, --participant <id>).",
+				Name: "list", Summary: msg.HelpPaymentsList,
 				Flags: []cli.Flag{
-					{Name: "status", Arg: "statut", Help: "Filtre par état."},
-					{Name: "participant", Arg: "id", Help: "Filtre par participant."},
+					{Name: "status", Arg: "statut", Help: msg.FlagFiltreParEtat},
+					{Name: "participant", Arg: "id", Help: msg.FlagPaymentsListParticipant},
 				},
 				APIOps: []string{"GET /payments"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -47,13 +48,13 @@ func init() {
 					for _, p := range out.Payments {
 						rows = append(rows, []string{str(p["id"]), str(p["status"]), str(p["kind"]), str(p["amount_cents"]), str(p["project"])})
 					}
-					return &cli.Result{Data: out.Payments, Headers: []string{"ID", "ÉTAT", "GENRE", "CENTIMES", "PROJET"}, Rows: rows,
-						Summary: fmt.Sprintf("%d paiement(s).", len(out.Payments)),
-						Crumbs:  []cli.Crumb{{Action: "qui n'a pas soldé", Cmd: "terranova payments outstanding"}}}, nil
+					return &cli.Result{Data: out.Payments, Headers: msg.HeadersPayments, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResPaymentCount, len(out.Payments)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbQuiNAPasSolde, Cmd: "terranova payments outstanding"}}}, nil
 				},
 			},
 			{
-				Name: "show", Summary: "Détail.", ArgSpec: "<id>", MinArgs: 1,
+				Name: "show", Summary: msg.HelpRestShow, ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"GET /payments/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -68,12 +69,12 @@ func init() {
 				},
 			},
 			{
-				Name: "add", Summary: "Enregistre un paiement (pending) pour un participant.",
+				Name: "add", Summary: msg.HelpPaymentsAdd,
 				Flags: []cli.Flag{
-					{Name: "participant", Arg: "id", Help: "Le participant (obligatoire)."},
-					{Name: "amount-cents", Arg: "n", Help: "Montant en centimes (obligatoire)."},
-					{Name: "kind", Arg: "genre", Help: "deposit|balance|full (défaut full)."},
-					{Name: "reference", Arg: "réf", Help: "Référence libre (virement…)."},
+					{Name: "participant", Arg: "id", Help: msg.FlagPaymentsAddParticipant},
+					{Name: "amount-cents", Arg: "n", Help: msg.FlagPaymentsAddAmountCents},
+					{Name: "kind", Arg: "genre", Help: msg.FlagPaymentsAddKind},
+					{Name: "reference", Arg: "réf", Help: msg.FlagPaymentsAddReference},
 				},
 				APIOps: []string{"POST /payments"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -87,7 +88,7 @@ func init() {
 						}
 					}
 					if body["participant_id"] == nil || body["amount_cents"] == nil {
-						return nil, cli.Usagef("--participant et --amount-cents sont obligatoires")
+						return nil, cli.Usagef(msg.UsagePaymentsAdd)
 					}
 					client, err := c.API()
 					if err != nil {
@@ -98,12 +99,12 @@ func init() {
 						return nil, err
 					}
 					id := str(dig(out, "payment", "id"))
-					return &cli.Result{Data: out, Summary: "Paiement enregistré (pending).",
-						Crumbs: []cli.Crumb{{Action: "encaissé ? le marquer payé", Cmd: "terranova payments mark-paid " + id}}}, nil
+					return &cli.Result{Data: out, Summary: msg.ResPaiementEnregistrePending,
+						Crumbs: []cli.Crumb{{Action: msg.CrumbEncaisseLeMarquerPaye, Cmd: "terranova payments mark-paid " + id}}}, nil
 				},
 			},
 			{
-				Name: "mark-paid", Summary: "Marque payé — par Payment#mark_paid!, le geste du webhook.", ArgSpec: "<id>", MinArgs: 1,
+				Name: "mark-paid", Summary: msg.HelpPaymentsMarkPaid, ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"POST /payments/{id}/mark_paid"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -114,12 +115,12 @@ func init() {
 					if err := client.Post("/payments/"+args[0]+"/mark_paid", nil, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Payé."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResPaye}, nil
 				},
 			},
 			{
-				Name: "plans", Summary: "Les échéanciers : plan, échéances, découvert.",
-				Flags:  []cli.Flag{{Name: "participant", Arg: "id", Help: "Le participant."}},
+				Name: "plans", Summary: msg.HelpPaymentsPlans,
+				Flags:  []cli.Flag{{Name: "participant", Arg: "id", Help: msg.FlagParticipant}},
 				APIOps: []string{"GET /payments/plans"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					participant, _ := cli.FlagValue(args, "participant")
@@ -139,8 +140,8 @@ func init() {
 				},
 			},
 			{
-				Name: "outstanding", Summary: "Qui n'a pas soldé : attendu vs payé par participant.",
-				Flags:  []cli.Flag{{Name: "list", Arg: "recording_id", Help: "Borne à une liste de participants (id de recording)."}},
+				Name: "outstanding", Summary: msg.HelpPaymentsOutstanding,
+				Flags:  []cli.Flag{{Name: "list", Arg: "recording_id", Help: msg.FlagPaymentsOutstandingList}},
 				APIOps: []string{"GET /payments/outstanding"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					listID, _ := cli.FlagValue(args, "list")
@@ -163,8 +164,8 @@ func init() {
 					for _, r := range out.Outstanding {
 						rows = append(rows, []string{str(r["participant_id"]), str(r["project"]), str(r["expected_cents"]), str(r["paid_cents"]), str(r["outstanding_cents"])})
 					}
-					return &cli.Result{Data: out, Headers: []string{"PARTICIPANT", "PROJET", "ATTENDU", "PAYÉ", "RESTE"}, Rows: rows,
-						Summary: fmt.Sprintf("%d participant(s) en attente · %d centimes de découvert.", len(out.Outstanding), out.Total)}, nil
+					return &cli.Result{Data: out, Headers: msg.HeadersOutstanding, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResOutstandingCount, len(out.Outstanding), out.Total)}, nil
 				},
 			},
 		},

@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"strings"
+
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // ParseGlobals sépare les drapeaux globaux des arguments de commande. Ils
@@ -15,7 +17,7 @@ func ParseGlobals(args []string) (GlobalFlags, []string, error) {
 		a := args[i]
 		next := func() (string, error) {
 			if i+1 >= len(args) {
-				return "", fmt.Errorf("le drapeau %s attend une valeur", a)
+				return "", fmt.Errorf(msg.UsageFlagNeedsValue, a)
 			}
 			i++
 			return args[i], nil
@@ -88,14 +90,14 @@ func Usagef(format string, args ...any) error {
 func HelpText(path string, c *Command) string {
 	var b strings.Builder
 	if c == nil {
-		b.WriteString("terranova — le compagnon en ligne de commande de Terranova (app.semisto.org)\n\n")
-		b.WriteString("Usage : terranova <commande> [sous-commande] [arguments] [drapeaux]\n\n")
+		b.WriteString(msg.HelpRootBanner)
+		b.WriteString(msg.HelpRootUsage)
 		groups := map[string][]string{}
 		order := []string{}
 		for _, cmd := range Registry {
 			g := cmd.Group
 			if g == "" {
-				g = "Autres"
+				g = msg.GroupOther
 			}
 			if _, seen := groups[g]; !seen {
 				order = append(order, g)
@@ -103,19 +105,19 @@ func HelpText(path string, c *Command) string {
 			groups[g] = append(groups[g], fmt.Sprintf("  %-16s %s", cmd.Name, cmd.Summary))
 		}
 		for _, g := range order {
-			b.WriteString(g + " :\n" + strings.Join(groups[g], "\n") + "\n\n")
+			b.WriteString(fmt.Sprintf(msg.HelpGroupHeader, g) + strings.Join(groups[g], "\n") + "\n\n")
 		}
-		b.WriteString("Drapeaux globaux : --json/-j --quiet/-q --md/-m --agent --ids-only --count --jq <filtre>\n")
-		b.WriteString("                   --hub <id> --project/-p <id> --profile/-P <nom> --yes -v/-vv\n")
-		b.WriteString("\n`terranova <commande> --help` pour le détail · `--help --agent` pour l'aide structurée.\n")
+		b.WriteString(msg.HelpRootGlobalFlags1)
+		b.WriteString(msg.HelpRootGlobalFlags2)
+		b.WriteString(msg.HelpRootFooter)
 		return b.String()
 	}
-	b.WriteString(fmt.Sprintf("terranova %s — %s\n", path, c.Summary))
+	b.WriteString(fmt.Sprintf(msg.HelpCommandTitle, path, c.Summary))
 	if c.ArgSpec != "" {
-		b.WriteString(fmt.Sprintf("Usage : terranova %s %s\n", path, c.ArgSpec))
+		b.WriteString(fmt.Sprintf(msg.HelpCommandUsage, path, c.ArgSpec))
 	}
 	if len(c.Flags) > 0 {
-		b.WriteString("\nDrapeaux :\n")
+		b.WriteString(msg.HelpFlagsHeader)
 		for _, fl := range c.Flags {
 			name := "--" + fl.Name
 			if fl.Short != "" {
@@ -128,13 +130,13 @@ func HelpText(path string, c *Command) string {
 		}
 	}
 	if len(c.Sub) > 0 {
-		b.WriteString("\nSous-commandes :\n")
+		b.WriteString(msg.HelpSubcommandsHeader)
 		for _, s := range c.Sub {
 			b.WriteString(fmt.Sprintf("  %-16s %s\n", s.Name, s.Summary))
 		}
 	}
 	if c.AgentHelp != "" {
-		b.WriteString("\nNotes : " + c.AgentHelp + "\n")
+		b.WriteString(msg.HelpNotesPrefix + c.AgentHelp + "\n")
 	}
 	return b.String()
 }

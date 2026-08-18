@@ -5,13 +5,14 @@ import (
 	"net/url"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // ISC-407 (solde) — le fil d'activité, le journal d'un recording, la totale.
 func init() {
 	cli.Register(&cli.Command{
-		Name: "activity", Group: "Search & Browse",
-		Summary: "Le fil d'activité du hub (— --project, même règle d'accès que l'écran).",
+		Name: "activity", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpActivity,
 		APIOps:  []string{"GET /activity"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			client, err := c.API()
@@ -32,14 +33,14 @@ func init() {
 			for _, e := range out.Events {
 				rows = append(rows, []string{str(e["created_at"]), str(e["actor"]), str(e["action"]), str(e["target_type"]) + " " + str(e["target_id"])})
 			}
-			return &cli.Result{Data: out.Events, Headers: []string{"QUAND", "QUI", "GESTE", "SUR"}, Rows: rows,
-				Summary: fmt.Sprintf("%d événement(s).", len(out.Events))}, nil
+			return &cli.Result{Data: out.Events, Headers: msg.HeadersActivityFeed, Rows: rows,
+				Summary: fmt.Sprintf(msg.ResEventCount, len(out.Events))}, nil
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "everything", Group: "Search & Browse",
-		Summary: "La totale : les comptes par type + les 20 récents.",
+		Name: "everything", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpEverything,
 		APIOps:  []string{"GET /everything"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			client, err := c.API()
@@ -51,13 +52,13 @@ func init() {
 				return nil, err
 			}
 			return &cli.Result{Data: out,
-				Crumbs: []cli.Crumb{{Action: "creuser un type", Cmd: "terranova recordings list --type <Type>"}}}, nil
+				Crumbs: []cli.Crumb{{Action: msg.CrumbCreuserUnType, Cmd: "terranova recordings list --type <Type>"}}}, nil
 		},
 	})
 
 	cli.Register(&cli.Command{
-		Name: "journal", Group: "Search & Browse",
-		Summary: "Le journal d'un recording : qui a fait quoi, quand.",
+		Name: "journal", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpJournal,
 		ArgSpec: "<recording_id>", MinArgs: 1,
 		APIOps: []string{"GET /recordings/{recording_id}/events"},
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -75,8 +76,8 @@ func init() {
 			for _, e := range out.Events {
 				rows = append(rows, []string{str(e["created_at"]), str(e["actor"]), str(e["action"])})
 			}
-			return &cli.Result{Data: out.Events, Headers: []string{"QUAND", "QUI", "GESTE"}, Rows: rows,
-				Summary: fmt.Sprintf("%d événement(s).", len(out.Events))}, nil
+			return &cli.Result{Data: out.Events, Headers: msg.HeadersJournal, Rows: rows,
+				Summary: fmt.Sprintf(msg.ResEventCount, len(out.Events))}, nil
 		},
 	})
 }

@@ -10,12 +10,13 @@ import (
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
 	"github.com/semisto-org/terranova-cli/internal/config"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 func init() {
 	cli.Register(&cli.Command{
-		Name: "surface", Group: "Additional",
-		Summary: "Imprime le snapshot de surface (.surface) — chaque commande, argument, drapeau (ISC-392).",
+		Name: "surface", Group: msg.GroupAdditional,
+		Summary: msg.HelpSurface,
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			fmt.Print(SurfaceSnapshot())
 			return nil, nil
@@ -23,15 +24,15 @@ func init() {
 	})
 
 	cli.Register(&cli.Command{
-		Name: "doctor", Group: "Auth & Config",
-		Summary: "Santé : binaire, config, jeton, connexion, identité (ISC-428).",
+		Name: "doctor", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpDoctor,
 		APIOps:  []string{"GET /health", "GET /me"},
 		Run:     runDoctor,
 	})
 
 	cli.Register(&cli.Command{
-		Name: "completion", Group: "Additional",
-		Summary: "Complétion shell : bash, zsh ou fish (ISC-427).",
+		Name: "completion", Group: msg.GroupAdditional,
+		Summary: msg.HelpCompletion,
 		ArgSpec: "<bash|zsh|fish>", MinArgs: 1,
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 			script, err := completionScript(args[0])
@@ -44,24 +45,17 @@ func init() {
 	})
 
 	cli.Register(&cli.Command{
-		Name: "url", Group: "Search & Browse",
-		Summary: "Résout une URL Terranova en objet + commandes suggérées (ISC-394).",
+		Name: "url", Group: msg.GroupSearchBrowse,
+		Summary: msg.HelpUrl,
 		ArgSpec: "<url>", MinArgs: 1,
 		Run: runURL,
 	})
 
 	cli.Register(&cli.Command{
-		Name: "quick-start", Group: "Auth & Config",
-		Summary: "Le chemin de la première commande utile, sans documentation externe (ISC-429).",
+		Name: "quick-start", Group: msg.GroupAuthConfig,
+		Summary: msg.HelpQuickStart,
 		Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
-			steps := []string{
-				"1. Émets ton jeton dans l'app : Compte & réglages → Jetons CLI (https://app.semisto.org/account/api_tokens).",
-				"2. `terranova auth login` — colle le jeton (il part au trousseau, jamais dans un fichier du dépôt).",
-				"3. `terranova me` — vérifie qui tu es et ce que tu peux faire.",
-				"4. `terranova projects list` — tes projets ; `terranova todos list -p <id>` — les tâches d'un projet.",
-				"5. `terranova todos add \"Ma tâche\" -p <id> --due-on 2026-09-01` — ta première écriture.",
-				"6. `terranova commands` — toute la surface ; `--agent` sur n'importe quoi pour le JSON.",
-			}
+			steps := msg.QuickStartSteps
 			if !c.Flags.JSON && c.IsTTY {
 				for _, s := range steps {
 					fmt.Println(s)
@@ -114,29 +108,29 @@ func runDoctor(c *cli.Ctx, args []string) (*cli.Result, error) {
 	checks := []check{}
 	add := func(name string, ok bool, note string) { checks = append(checks, check{name, ok, note}) }
 
-	add("binaire", true, "version "+c.Version)
-	add("config", true, config.Dir())
+	add(msg.DoctorBinary, true, fmt.Sprintf(msg.DoctorNoteVersion, c.Version))
+	add(msg.DoctorConfig, true, config.Dir())
 
 	token, err := config.Token(c.Profile)
-	add("jeton (profil "+c.Profile+")", err == nil && token != "", noteIf(err))
+	add(fmt.Sprintf(msg.DoctorTokenProfile, c.Profile), err == nil && token != "", noteIf(err))
 
 	client, err := c.API()
 	if err != nil {
-		add("connexion", false, err.Error())
+		add(msg.DoctorConnection, false, err.Error())
 	} else {
 		var health map[string]any
 		if err := client.Get("/health", &health); err != nil {
-			add("connexion "+client.BaseURL, false, err.Error())
+			add(fmt.Sprintf(msg.DoctorConnectionTo, client.BaseURL), false, err.Error())
 		} else {
-			add("connexion "+client.BaseURL, true, str(health["revision"]))
+			add(fmt.Sprintf(msg.DoctorConnectionTo, client.BaseURL), true, str(health["revision"]))
 		}
 		var me struct {
 			Me map[string]any `json:"me"`
 		}
 		if err := client.Get("/me", &me); err != nil {
-			add("identité", false, err.Error())
+			add(msg.DoctorIdentity, false, err.Error())
 		} else {
-			add("identité", true, str(me.Me["name"])+" · hub "+str(dig(me.Me, "current_hub", "name")))
+			add(msg.DoctorIdentity, true, fmt.Sprintf(msg.ResMeSummary, str(me.Me["name"]), str(dig(me.Me, "current_hub", "name"))))
 		}
 	}
 
@@ -144,7 +138,7 @@ func runDoctor(c *cli.Ctx, args []string) (*cli.Result, error) {
 		home, _ := os.UserHomeDir()
 		_, err := os.Stat(home + "/.claude/plugins/terranova")
 		_ = plugin
-		add("plugin agent", err == nil, "posable via `terranova setup claude`")
+		add(msg.DoctorPlugin, err == nil, msg.DoctorPluginNote)
 		break
 	}
 
@@ -158,12 +152,12 @@ func runDoctor(c *cli.Ctx, args []string) (*cli.Result, error) {
 		}
 		rows = append(rows, []string{mark, ch.Name, ch.Note})
 	}
-	summary := "Tout est en ordre."
+	summary := msg.DoctorAllOK
 	if !allOK {
-		summary = "Au moins un contrôle échoue — vois le détail."
+		summary = msg.DoctorFailing
 	}
 	return &cli.Result{Data: map[string]any{"ok": allOK, "checks": checks},
-		Headers: []string{"", "CONTRÔLE", "NOTE"}, Rows: rows, Summary: summary}, nil
+		Headers: msg.HeadersDoctor, Rows: rows, Summary: summary}, nil
 }
 
 func noteIf(err error) string {
@@ -177,7 +171,7 @@ func noteIf(err error) string {
 func runURL(c *cli.Ctx, args []string) (*cli.Result, error) {
 	u, err := url.Parse(args[0])
 	if err != nil {
-		return nil, cli.Usagef("URL invalide : %v", err)
+		return nil, cli.Usagef(msg.UsageInvalidURL, err)
 	}
 	path := u.Path
 	type match struct {
@@ -188,19 +182,19 @@ func runURL(c *cli.Ctx, args []string) (*cli.Result, error) {
 	matches := []match{
 		{regexp.MustCompile(`^/projects/(\d+)`), "project", func(ids []string) []cli.Crumb {
 			return []cli.Crumb{
-				{Action: "voir le projet", Cmd: "terranova projects show " + ids[0]},
-				{Action: "ses tâches", Cmd: "terranova todos list -p " + ids[0]},
-				{Action: "ses recordings", Cmd: "terranova recordings list -p " + ids[0]},
+				{Action: msg.CrumbVoirLeProjet, Cmd: "terranova projects show " + ids[0]},
+				{Action: msg.CrumbSesTaches, Cmd: "terranova todos list -p " + ids[0]},
+				{Action: msg.CrumbSesRecordings, Cmd: "terranova recordings list -p " + ids[0]},
 			}
 		}},
 		{regexp.MustCompile(`^/(?:todos|messages|documents|cards|events|recordings)/(\d+)`), "recording", func(ids []string) []cli.Crumb {
 			return []cli.Crumb{
-				{Action: "voir", Cmd: "terranova recordings show " + ids[0]},
-				{Action: "commenter", Cmd: "terranova recordings comment " + ids[0] + " <corps>"},
+				{Action: msg.CrumbVoir, Cmd: "terranova recordings show " + ids[0]},
+				{Action: msg.CrumbCommenter, Cmd: "terranova recordings comment " + ids[0] + " <corps>"},
 			}
 		}},
 		{regexp.MustCompile(`^/(administratio|contacto|planto|academio|conceptio|nurserio)`), "lens", func(ids []string) []cli.Crumb {
-			return []cli.Crumb{{Action: "la lentille au CLI", Cmd: "terranova " + ids[0] + " --help"}}
+			return []cli.Crumb{{Action: msg.CrumbLaLentilleAuCLI, Cmd: "terranova " + ids[0] + " --help"}}
 		}},
 	}
 	for _, m := range matches {
@@ -222,10 +216,10 @@ func runURL(c *cli.Ctx, args []string) (*cli.Result, error) {
 				}
 			}
 			return &cli.Result{Data: data, Crumbs: m.crumb(ids),
-				Summary: "Reconnu : " + m.kind + "."}, nil
+				Summary: fmt.Sprintf(msg.ResURLRecognized, m.kind)}, nil
 		}
 	}
-	return nil, fmt.Errorf("URL non reconnue — motifs connus : /projects/<id>, /<type>/<id>, /<lentille>")
+	return nil, fmt.Errorf(msg.ErrURLNotRecognized)
 }
 
 // completionScript génère la complétion depuis le registre.
@@ -243,7 +237,7 @@ func completionScript(shell string) (string, error) {
 	switch shell {
 	case "bash", "zsh":
 		var b strings.Builder
-		b.WriteString("# Complétion terranova — générée par `terranova completion " + shell + "`\n")
+		b.WriteString(fmt.Sprintf(msg.CompletionHeader, shell))
 		b.WriteString("_terranova() {\n  local cur prev\n  cur=\"${COMP_WORDS[COMP_CWORD]}\"\n  prev=\"${COMP_WORDS[COMP_CWORD-1]}\"\n")
 		b.WriteString("  case \"$prev\" in\n")
 		for _, top := range tops {
@@ -268,5 +262,5 @@ func completionScript(shell string) (string, error) {
 		}
 		return b.String(), nil
 	}
-	return "", cli.Usagef("shell inconnu : %s (bash|zsh|fish)", shell)
+	return "", cli.Usagef(msg.UsageUnknownShell, shell)
 }

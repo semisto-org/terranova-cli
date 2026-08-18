@@ -5,17 +5,18 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // ISC-408 — les pings : mes conversations, poster vers des personnes précises
 // (idempotent), répondre, archiver (irréversible, comme à l'écran).
 func init() {
 	cli.Register(&cli.Command{
-		Name: "pings", Group: "Communication",
-		Summary: "Mes conversations directes (1:1 et groupes) : lire, pinguer, répondre, archiver.",
+		Name: "pings", Group: msg.GroupCommunication,
+		Summary: msg.HelpPings,
 		Sub: []*cli.Command{
 			{
-				Name: "list", Summary: "Mes conversations actives.",
+				Name: "list", Summary: msg.HelpPingsList,
 				APIOps: []string{"GET /pings"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -40,13 +41,13 @@ func init() {
 						}
 						rows = append(rows, []string{str(p["id"]), strings.Join(names, ", ")})
 					}
-					return &cli.Result{Data: out.Pings, Headers: []string{"ID", "AVEC"}, Rows: rows,
-						Summary: fmt.Sprintf("%d conversation(s).", len(out.Pings)),
-						Crumbs:  []cli.Crumb{{Action: "lire", Cmd: "terranova pings show <id>"}}}, nil
+					return &cli.Result{Data: out.Pings, Headers: msg.HeadersPings, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResPingCount, len(out.Pings)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbLire, Cmd: "terranova pings show <id>"}}}, nil
 				},
 			},
 			{
-				Name: "show", Summary: "La conversation et ses messages.", ArgSpec: "<id>", MinArgs: 1,
+				Name: "show", Summary: msg.HelpPingsShow, ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"GET /pings/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -58,18 +59,18 @@ func init() {
 						return nil, err
 					}
 					return &cli.Result{Data: out,
-						Crumbs: []cli.Crumb{{Action: "répondre", Cmd: "terranova pings reply " + args[0] + " <texte>"}}}, nil
+						Crumbs: []cli.Crumb{{Action: msg.CrumbRepondre, Cmd: "terranova pings reply " + args[0] + " <texte>"}}}, nil
 				},
 			},
 			{
-				Name: "send", Summary: "Pingue des personnes précises — même ensemble = même conversation (idempotent).",
+				Name: "send", Summary: msg.HelpPingsSend,
 				ArgSpec: "<texte…> --to <user_id,user_id…>", MinArgs: 1,
-				Flags:  []cli.Flag{{Name: "to", Arg: "ids", Help: "Les destinataires, ids séparés par des virgules (obligatoire)."}},
+				Flags:  []cli.Flag{{Name: "to", Arg: "ids", Help: msg.FlagPingsSendTo}},
 				APIOps: []string{"POST /pings"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					to, rest := cli.FlagValue(args, "to")
 					if to == "" || len(rest) == 0 {
-						return nil, cli.Usagef("usage : terranova pings send <texte> --to <user_id,…>")
+						return nil, cli.Usagef(msg.UsagePingsSend)
 					}
 					client, err := c.API()
 					if err != nil {
@@ -83,12 +84,12 @@ func init() {
 						return nil, err
 					}
 					id := str(dig(out, "ping", "id"))
-					return &cli.Result{Data: out, Summary: "Ping envoyé.",
-						Crumbs: []cli.Crumb{{Action: "suivre la conversation", Cmd: "terranova pings show " + id}}}, nil
+					return &cli.Result{Data: out, Summary: msg.ResPingEnvoye,
+						Crumbs: []cli.Crumb{{Action: msg.CrumbSuivreLaConversation, Cmd: "terranova pings show " + id}}}, nil
 				},
 			},
 			{
-				Name: "reply", Summary: "Répond dans une conversation.", ArgSpec: "<id> <texte…>", MinArgs: 2,
+				Name: "reply", Summary: msg.HelpPingsReply, ArgSpec: "<id> <texte…>", MinArgs: 2,
 				APIOps: []string{"POST /pings/{id}/messages"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
 					client, err := c.API()
@@ -99,15 +100,15 @@ func init() {
 					if err := client.Post("/pings/"+args[0]+"/messages", map[string]any{"body": strings.Join(args[1:], " ")}, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Répondu."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResRepondu}, nil
 				},
 			},
 			{
-				Name: "archive", Summary: "Archive (IRRÉVERSIBLE — re-pinguer rouvre une conversation neuve). --yes obligatoire en agent.",
+				Name: "archive", Summary: msg.HelpPingsArchive,
 				ArgSpec: "<id>", MinArgs: 1,
 				APIOps: []string{"POST /pings/{id}/archive"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
-					if err := confirm(c, "Archiver cette conversation ? (irréversible)"); err != nil {
+					if err := confirm(c, msg.AskArchivePing); err != nil {
 						return nil, err
 					}
 					client, err := c.API()
@@ -118,7 +119,7 @@ func init() {
 					if err := client.Post("/pings/"+args[0]+"/archive", nil, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Archivée."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResArchivee}, nil
 				},
 			},
 		},

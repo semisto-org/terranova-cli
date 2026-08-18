@@ -1,0 +1,56 @@
+package msg
+
+// Academio — activités, présences, packs — et les paiements Academy.
+
+const (
+	HelpAcademio                       = "Academy : activités, séances, présences, packs, référentiels."
+	NotesAcademio                      = "Scope requis : academio (grant + jeton). Les inscriptions passent par `participants add` (spine)."
+	HelpAcademioActivities             = "Activités : type, lieu, inscrits (même définition que le reporting)."
+	HelpAcademioActivitiesList         = "Liste des activités."
+	CrumbLeDetailEtLesSeances          = "le détail et les séances"
+	HelpAcademioActivitiesShow         = "Détail avec les séances."
+	CrumbLaFeuilleDePresence           = "la feuille de présence d'une séance"
+	HelpAcademioAttendances            = "La feuille de présence (participant × séance)."
+	HelpAcademioAttendancesList        = "Liste (— --session <id> ou --participant <id>)."
+	FlagAcademioAttendancesListSession = "La séance (schedule_entry_id)."
+	HelpAcademioAttendancesSet         = "Pose une présence (— --absent pour marquer absent). Upsert idempotent."
+	FlagAcademioAttendancesSetAbsent   = "Marque ABSENT (présent par défaut)."
+	ResPresencePosee                   = "Présence posée."
+	HelpAcademioAttendancesRemove      = "Retire une ligne de présence."
+	ResRetiree                         = "Retirée."
+	HelpAcademioPacks                  = "Les packs d'une inscription."
+	HelpAcademioPacksList              = "Liste (— --participant <id>)."
+	HelpAcademioPacksAdd               = "Ajoute un pack (prix par défaut du pack)."
+	FlagAcademioPacksAddQuantity       = "Quantité (défaut 1)."
+	FlagAcademioPacksAddPriceCents     = "Prix forcé, sinon celui du pack."
+	ResPackAjoute                      = "Pack ajouté."
+	HelpAcademioPacksRemove            = "Retire un pack d'une inscription."
+	ResRetire                          = "Retiré."
+	HelpAcademioTypes                  = "Les types de formation du hub."
+	HelpAcademioLocations              = "Les lieux de formation du hub."
+	HelpPayments                       = "Paiements Academy : lister, enregistrer, marquer payé, « qui n'a pas soldé »."
+	HelpPaymentsList                   = "Liste (— --status pending|paid|refunded, --participant <id>)."
+	FlagPaymentsListParticipant        = "Filtre par participant."
+	CrumbQuiNAPasSolde                 = "qui n'a pas soldé"
+	HelpPaymentsAdd                    = "Enregistre un paiement (pending) pour un participant."
+	FlagPaymentsAddParticipant         = "Le participant (obligatoire)."
+	FlagPaymentsAddAmountCents         = "Montant en centimes (obligatoire)."
+	FlagPaymentsAddKind                = "deposit|balance|full (défaut full)."
+	FlagPaymentsAddReference           = "Référence libre (virement…)."
+	ResPaiementEnregistrePending       = "Paiement enregistré (pending)."
+	CrumbEncaisseLeMarquerPaye         = "encaissé ? le marquer payé"
+	HelpPaymentsMarkPaid               = "Marque payé — par Payment#mark_paid!, le geste du webhook."
+	ResPaye                            = "Payé."
+	HelpPaymentsPlans                  = "Les échéanciers : plan, échéances, découvert."
+	HelpPaymentsOutstanding            = "Qui n'a pas soldé : attendu vs payé par participant."
+	FlagPaymentsOutstandingList        = "Borne à une liste de participants (id de recording)."
+)
+
+// Formats — activités, présences, packs, paiements.
+const (
+	ResActivityCount    = "%d activité(s)."
+	ResAttendanceCount  = "%d ligne(s) de présence."
+	ResPackCount        = "%d pack(s)."
+	ResPaymentCount     = "%d paiement(s)."
+	ResOutstandingCount = "%d participant(s) en attente · %d centimes de découvert."
+)

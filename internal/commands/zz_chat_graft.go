@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 )
 
 // La greffe des LIGNES sur chat (ISC-401) vit dans un fichier nommé zz_* À
@@ -19,7 +20,7 @@ func init() {
 		}
 		cmd.Sub = append(cmd.Sub,
 			&cli.Command{
-				Name: "lines", Summary: "Les lignes du feu de camp (plus récentes d'abord).",
+				Name: "lines", Summary: msg.HelpLines,
 				ArgSpec: "<campfire_recording_id>", MinArgs: 1,
 				APIOps: []string{"GET /recordings/{recording_id}/lines"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -37,13 +38,13 @@ func init() {
 					for _, l := range out.Lines {
 						rows = append(rows, []string{str(l["id"]), str(l["author"]), str(l["body"])})
 					}
-					return &cli.Result{Data: out.Lines, Headers: []string{"ID", "QUI", "QUOI"}, Rows: rows,
-						Summary: fmt.Sprintf("%d ligne(s).", len(out.Lines)),
-						Crumbs:  []cli.Crumb{{Action: "répondre", Cmd: "terranova chat post " + args[0] + " <texte>"}}}, nil
+					return &cli.Result{Data: out.Lines, Headers: msg.HeadersChatLines, Rows: rows,
+						Summary: fmt.Sprintf(msg.ResLineCount, len(out.Lines)),
+						Crumbs:  []cli.Crumb{{Action: msg.CrumbRepondre, Cmd: "terranova chat post " + args[0] + " <texte>"}}}, nil
 				},
 			},
 			&cli.Command{
-				Name: "post", Summary: "Poste une ligne, signée du porteur du jeton.",
+				Name: "post", Summary: msg.HelpPost,
 				ArgSpec: "<campfire_recording_id> <texte…>", MinArgs: 2,
 				APIOps: []string{"POST /recordings/{recording_id}/lines"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -56,11 +57,11 @@ func init() {
 						map[string]any{"body": strings.Join(args[1:], " ")}, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Ligne postée."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResLignePostee}, nil
 				},
 			},
 			&cli.Command{
-				Name: "edit-line", Summary: "Édite SA propre ligne.",
+				Name: "edit-line", Summary: msg.HelpEditLine,
 				ArgSpec: "<campfire_recording_id> <line_id> <texte…>", MinArgs: 3,
 				APIOps: []string{"PATCH /recordings/{recording_id}/lines/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
@@ -73,15 +74,15 @@ func init() {
 						map[string]any{"body": strings.Join(args[2:], " ")}, &out); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: out, Summary: "Ligne éditée."}, nil
+					return &cli.Result{Data: out, Summary: msg.ResLigneEditee}, nil
 				},
 			},
 			&cli.Command{
-				Name: "delete-line", Summary: "Supprime SA propre ligne (confirmation, ou --yes).",
+				Name: "delete-line", Summary: msg.HelpDeleteLine,
 				ArgSpec: "<campfire_recording_id> <line_id>", MinArgs: 2,
 				APIOps: []string{"DELETE /recordings/{recording_id}/lines/{id}"},
 				Run: func(c *cli.Ctx, args []string) (*cli.Result, error) {
-					if err := confirm(c, "Supprimer cette ligne de chat ?"); err != nil {
+					if err := confirm(c, msg.AskDeleteChatLine); err != nil {
 						return nil, err
 					}
 					client, err := c.API()
@@ -91,7 +92,7 @@ func init() {
 					if err := client.Delete("/recordings/"+args[0]+"/lines/"+args[1], nil); err != nil {
 						return nil, err
 					}
-					return &cli.Result{Data: map[string]any{"deleted": true}, Summary: "Ligne supprimée."}, nil
+					return &cli.Result{Data: map[string]any{"deleted": true}, Summary: msg.ResLigneSupprimee}, nil
 				},
 			},
 		)

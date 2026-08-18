@@ -12,6 +12,7 @@ import (
 
 	"github.com/itchyny/gojq"
 	"github.com/semisto-org/terranova-cli/internal/cli"
+	"github.com/semisto-org/terranova-cli/internal/msg"
 	"golang.org/x/term"
 )
 
@@ -160,7 +161,7 @@ func rowsOfDashes(widths []int) []string {
 func applyJQ(filter string, data any) (any, error) {
 	q, err := gojq.Parse(filter)
 	if err != nil {
-		return nil, fmt.Errorf("--jq : filtre invalide : %w", err)
+		return nil, fmt.Errorf(msg.UsageInvalidJQ, err)
 	}
 	// gojq exige des types JSON purs : on repasse par un round-trip.
 	raw, err := json.Marshal(data)
