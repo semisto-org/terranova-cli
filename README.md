@@ -15,10 +15,10 @@ terranova me   # qui je suis, mes hubs, mes droits — la réponse en un appel
 ## Installation
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/semisto-org/terranova-cli/main/install.sh | bash
+brew install semisto-org/tap/terranova
 ```
 
-Ou : `go install github.com/semisto-org/terranova-cli/cmd/terranova@latest`.
+Ou : le script `install.sh` à la racine du dépôt, ou `go install github.com/semisto-org/terranova-cli/cmd/terranova@latest`.
 
 Première fois : `terranova quick-start`. Jeton : dans l'app, **Compte & réglages → Jetons CLI**, puis `terranova auth login`.
 
